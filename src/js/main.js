@@ -8,12 +8,101 @@ const selectAll = (par, child) => par.querySelectorAll(child);
 
 const problemLink = 'https://codeforces.com/problemset/problem';
 
-const toolsBtn = $$('.tool-item');
+const toolItems = $$('.tool-item');
 const contents = $$('.main-content');
+const problemsetContainer = $('.main-content.problemset');
+
+let listCnt = 0;
+let newList = [];
+let newListSize = 0;
 
 const hideAll = (list) => list.forEach((item) => (item.style.display = 'none'));
 
-toolsBtn.forEach((item, index) => {
+const getList = (problems) => {
+	const nameSearch = $('#nameSearch');
+	const tagSearch = $('#tagSearch');
+	const ratingFrom = $('#ratingFrom');
+	const ratingTo = $('#ratingTo');
+	const contestSearch = $('#contestSearch');
+
+	const nameSearchValue = nameSearch.value.trim();
+	const tagSearchValue = tagSearch.value.trim();
+	const ratingFromValue = Number(ratingFrom.value.trim());
+	const ratingToValue = Number(ratingTo.value.trim());
+	const contestSearchValue = contestSearch.value.trim();
+
+	let problemList = Array.from(problems);
+
+	if (nameSearchValue)
+		problemList = problemList.filter((item) =>
+			item.name.includes(nameSearchValue)
+		);
+
+	if (tagSearchValue)
+		problemList = problemList.filter((item) =>
+			item.tags.some((tag) => tagSearchValue.includes(tag))
+		);
+
+	if (ratingFromValue || ratingToValue)
+		problemList = problemList.filter((item) => {
+			if (ratingFromValue && ratingToValue)
+				return (
+					ratingFromValue <= item.rating &&
+					item.rating <= ratingToValue
+				);
+			if (ratingFromValue) return ratingFromValue <= item.rating;
+			return item.rating <= ratingToValue;
+		});
+
+	if (contestSearchValue)
+		problemList = problemList.filter(
+			(item) => item.contestId == contestSearchValue
+		);
+
+	return problemList;
+};
+const getListHTMLS = (list, from = 0, to = 0) => {
+	return list
+		.slice(from, to)
+		.map(
+			(item) => `<a
+							class="content-item" target="_blank" rel=”noopener”
+							href="${problemLink}/${item.contestId}/${item.index}">
+							<div class="content-item__info">
+								<span class="content-item__info-index">
+									${item.index + ' - '}
+								</span>
+								<span class="content-item__info-name">
+									${item.name}
+								</span>
+							</div>
+
+							<div class="content-item__tags">
+								${item.tags.map((item) => item).join(', ')}
+							</div>
+							<div class="content-item__rating">
+								<span class="label">Rating:</span>
+								<span class="rating"> ${item.rating}</span>
+							</div>
+						</a>`
+		)
+		.join('');
+};
+
+const loadEvent = (e) => {
+	e.target.style.display = 'none';
+	const problemsetAllContent = select(problemsetContainer, '.all-content');
+	problemsetAllContent.innerHTML += getListHTMLS(
+		newList,
+		listCnt,
+		listCnt + 20
+	);
+	listCnt += 20;
+	if (listCnt < newListSize)
+		problemsetAllContent.innerHTML += `<button class="load-more" onclick="loadEvent(event)">Load More</button>`;
+};
+
+toolItems.forEach((item, index) => {
 	item.onclick = (e) => {
 		const lastToolActive = $('.tool-container .active');
 		if (lastToolActive && lastToolActive !== e.currentTarget) {
@@ -36,78 +125,6 @@ toolsBtn.forEach((item, index) => {
 	const data = await response.json();
 	const { problemStatistics, problems } = data.result;
 
-	const getList = () => {
-		const nameSearch = $('#nameSearch');
-		const tagSearch = $('#tagSearch');
-		const ratingFrom = $('#ratingFrom');
-		const ratingTo = $('#ratingTo');
-		const contestSearch = $('#contestSearch');
-
-		const nameSearchValue = nameSearch.value.trim();
-		const tagSearchValue = tagSearch.value.trim();
-		const ratingFromValue = Number(ratingFrom.value.trim());
-		const ratingToValue = Number(ratingTo.value.trim());
-		const contestSearchValue = contestSearch.value.trim();
-
-		let problemList = Array.from(problems);
-
-		if (nameSearchValue)
-			problemList = problemList.filter((item) =>
-				item.name.includes(nameSearchValue)
-			);
-
-		if (tagSearchValue)
-			problemList = problemList.filter((item) =>
-				item.tags.some((tag) => tagSearchValue.includes(tag))
-			);
-
-		if (ratingFromValue || ratingToValue)
-			problemList = problemList.filter((item) => {
-				if (ratingFromValue && ratingToValue)
-					return (
-						ratingFromValue <= item.rating &&
-						item.rating <= ratingToValue
-					);
-				if (ratingFromValue) return ratingFromValue <= item.rating;
-				return item.rating <= ratingToValue;
-			});
-
-		if (contestSearchValue)
-			problemList = problemList.filter(
-				(item) => item.contestId == contestSearchValue
-			);
-
-		return problemList;
-	};
-	const getListHTMLS = (list, from = 0, to = 0) => {
-		return list
-			.slice(from, to)
-			.map(
-				(item) => `<a
-							class="content-item" target="_blank" rel=”noopener”
-							href="${problemLink}/${item.contestId}/${item.index}">
-							<div class="content-item__info">
-								<span class="content-item__info-index">
-									${item.index + ' - '}
-								</span>
-								<span class="content-item__info-name">
-									${item.name}
-								</span>
-							</div>
-
-							<div class="content-item__tags">
-								${item.tags.map((item) => item).join(', ')}
-							</div>
-							<div class="content-item__rating">
-								<span class="label">Rating:</span>
-								<span class="rating"> ${item.rating}</span>
-							</div>
-						</a>`
-			)
-			.join('');
-	};
-
-	const problemsetContainer = $('.main-content.problemset');
 	problemsetContainer.innerHTML = `<div class="header"><span>Problemset</span></div>
 									<form class="search-container">
 										<input placeholder="Search by name" type="text" id="nameSearch">
@@ -130,13 +147,20 @@ toolsBtn.forEach((item, index) => {
 	const submitBtn = select(problemsetContainer, '.search-container .submit');
 	submitBtn.onclick = (e) => {
 		e.preventDefault();
-		problemsetAllContent.innerHTML = getListHTMLS(getList(), 0, 20);
+
+		newList = getList(problems);
+		newListSize = newList.length;
+		listCnt = newListSize <= 20 ? newListSize : 20;
+		problemsetAllContent.innerHTML = getListHTMLS(newList, 0, listCnt);
+
+		if (listCnt < newListSize)
+			problemsetAllContent.innerHTML += `<button class="load-more" onclick="loadEvent(event)">Load More</button>`;
 	};
 
 	const randomBtn = select(problemsetContainer, '.search-container .random');
 	randomBtn.onclick = (e) => {
 		e.preventDefault();
-		let newList = getList();
+		let newList = getList(problems);
 		let listSize = newList.length;
 		let randNum = Math.round(Math.random() * listSize);
 
@@ -160,7 +184,7 @@ toolsBtn.forEach((item, index) => {
 
 	const userContainer = $('.main-content.user');
 	userContainer.innerHTML = `<div class="header"><span>User Info</span></div>
-								<input placeholder="Search user by handle" type="text" id="handleSearch">
+								<input placeholder="Search user by handle, split by ';'" type="text" id="handleSearch">
 								<div class="all-content"></div>`;
 
 	const allUserContent = select(userContainer, '.all-content');
@@ -169,7 +193,10 @@ toolsBtn.forEach((item, index) => {
 		data.forEach(
 			(user) =>
 				(allUserContent.innerHTML += `
-					<div class="user-item">
+					<a
+						class="user-item" target="_blank" rel=”noopener”
+						href="https://codeforces.com/profile/${user.handle}"
+						>
 						<div class="left">
 							<figure>
 								<figcaption>
@@ -209,7 +236,7 @@ toolsBtn.forEach((item, index) => {
 							}
 							<div class="friends">Friend of <b>${user.friendOfCount}</b> users</div>
 						</div>
-					</div>`)
+					</a>`)
 		);
 	};
 
@@ -266,4 +293,10 @@ toolsBtn.forEach((item, index) => {
 			renderUserInfo(data.result);
 		})();
 	};
+})();
+
+(() => {
+	const toolContainer = $('.tool-container');
+	const toolMenu = $('.tool-btn');
+	toolMenu.onclick = () => toolContainer.classList.toggle('active');
 })();

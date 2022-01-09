@@ -2,6 +2,10 @@
 	--tool-width: 180px;
 }
 
+* {
+	transition: all 0.2s ease;
+}
+
 body {
 	overflow: hidden;
 }
@@ -17,6 +21,7 @@ body {
 	bottom: 0;
 	font-size: 2rem;
 	width: var(--tool-width);
+	transition: all 0.2s ease;
 	border-right: 1px solid rgba(0, 0, 0, 0.144);
 }
 .tool-container .tool-item {
@@ -57,7 +62,35 @@ body {
 .tool-container .tool-item.active > span:after {
 	background-color: rgb(45, 233, 170);
 }
+.tool-btn {
+	cursor: pointer;
+	position: fixed;
+	left: 1.1rem;
+	top: 1.1rem;
+	width: 4rem;
+	height: 4rem;
+	border-radius: 50%;
+	transition: all 0.2s ease;
+	background-color: aquamarine;
+}
 
+.tool-container.active {
+	--tool-width: 65px;
+}
+.tool-container.active .tool-btn,
+.tool-btn:hover {
+	background-color: lightsalmon;
+}
+.tool-container.active .tool-btn:hover {
+	background-color: aquamarine;
+}
+.tool-container.active .tool-item > span {
+	display: none;
+}
+
+.tool-container.active + .main-container {
+	--tool-width: 65px;
+}
 .main-container {
 	position: fixed;
 	left: var(--tool-width);
@@ -161,6 +194,7 @@ input::placeholder {
 }
 input {
 	outline: none;
+	max-width: 70rem;
 	width: 75%;
 	height: 3.7rem;
 	font-size: 2rem;
@@ -233,6 +267,7 @@ input {
 button {
 	transition: all 0.2s ease;
 	border-radius: 1rem;
+	cursor: pointer;
 	font-size: 2rem;
 	margin: 1.2rem;
 	padding: 1rem;
