@@ -73,6 +73,11 @@ body {
 	transition: all 0.2s ease;
 	background-color: aquamarine;
 }
+.tool-brand {
+	position: fixed;
+	left: 6.2rem;
+	top: 2.1rem;
+}
 
 .tool-container.active {
 	--tool-width: 65px;
@@ -85,6 +90,9 @@ body {
 	background-color: aquamarine;
 }
 .tool-container.active .tool-item > span {
+	display: none;
+}
+.tool-container.active .tool-brand {
 	display: none;
 }
 
