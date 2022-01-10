@@ -11,10 +11,57 @@ const problemLink = 'https://codeforces.com/problemset/problem';
 const toolItems = $$('.tool-item');
 const contents = $$('.main-content');
 const problemsetContainer = $('.main-content.problemset');
+const stalkingContainer = $('.main-content.stalking');
+let stalkingContent;
 
+let problemsData = JSON.parse(localStorage.getItem('problems')) || {};
 let listCnt = 0;
 let newList = [];
 let newListSize = 0;
+let stalkListCnt = 10;
+
+const problemStatusList = [
+	'OK',
+	'TIME_LIMIT_EXCEEDED',
+	'MEMORY_LIMIT_EXCEEDED',
+	'COMPILATION_ERROR',
+	'RUNTIME_ERROR',
+	'FAILED',
+	'WRONG_ANSWER',
+];
+const problemStatus = {
+	OK: {
+		color: '#00a92a',
+		text: 'AC',
+	},
+	TIME_LIMIT_EXCEEDED: {
+		color: '#fff863',
+		text: 'TLE',
+	},
+	MEMORY_LIMIT_EXCEEDED: {
+		color: '#ffa71c',
+		text: 'MLE',
+	},
+	COMPILATION_ERROR: {
+		color: '#ffa71c',
+		text: 'CE',
+	},
+	RUNTIME_ERROR: {
+		color: '#ffa71c',
+		text: 'RE',
+	},
+	FAILED: {
+		color: 'red',
+		text: 'FAILED',
+	},
+	WRONG_ANSWER: {
+		color: 'red',
+		text: 'WA',
+	},
+	OTHER: {
+		color: 'lightgrey',
+	},
+};
 
 const hideAll = (list) => list.forEach((item) => (item.style.display = 'none'));
 
@@ -25,8 +72,8 @@ const getList = (problems) => {
 	const ratingTo = $('#ratingTo');
 	const contestSearch = $('#contestSearch');
 
-	const nameSearchValue = nameSearch.value.trim();
-	const tagSearchValue = tagSearch.value.trim();
+	const nameSearchValue = nameSearch.value.trim().toLowerCase();
+	const tagSearchValue = tagSearch.value.trim().toLowerCase();
 	const ratingFromValue = Number(ratingFrom.value.trim());
 	const ratingToValue = Number(ratingTo.value.trim());
 	const contestSearchValue = contestSearch.value.trim();
@@ -35,12 +82,12 @@ const getList = (problems) => {
 
 	if (nameSearchValue)
 		problemList = problemList.filter((item) =>
-			item.name.includes(nameSearchValue)
+			item.name.toLowerCase().includes(nameSearchValue)
 		);
 
 	if (tagSearchValue)
 		problemList = problemList.filter((item) =>
-			item.tags.some((tag) => tagSearchValue.includes(tag))
+			item.tags.some((tag) => tagSearchValue.toLowerCase().includes(tag))
 		);
 
 	if (ratingFromValue || ratingToValue)
@@ -89,6 +136,31 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 		.join('');
 };
 
+const stalkRender = (data) => {
+	stalkingContent = select(stalkingContainer, '.all-content');
+	stalkingContent.innerHTML;
+	data.forEach(
+		(user) =>
+			(stalkingContent.innerHTML += `
+					<div class="userSubmissionStalk">
+						<div class="problemDetail">
+							<span class="problemName">${user.problem.name}</span>
+							<span class="problemRate">${user.problem.rating}</span>
+							<span class="problemVerdict" style="color:${
+								problemStatusList.includes(user.verdict)
+									? problemStatus[user.verdict].color
+									: problemStatus['OTHER'].color
+							}">
+							${
+								problemStatusList.includes(user.verdict)
+									? problemStatus[user.verdict].text
+									: user.verdict
+							}</span>
+						</div>
+					</div>`)
+	);
+};
+
 const loadEvent = (e) => {
 	e.target.style.display = 'none';
 	const problemsetAllContent = select(problemsetContainer, '.all-content');
@@ -100,6 +172,22 @@ const loadEvent = (e) => {
 	listCnt += 20;
 	if (listCnt < newListSize)
 		problemsetAllContent.innerHTML += `<button class="load-more" onclick="loadEvent(event)">Load More</button>`;
+};
+const stalkLoadEvent = (e) => {
+	const searchBar = $('#stalkHandle');
+	e.target.style.display = 'none';
+	(async () => {
+		const value = searchBar.value.trim();
+		const response = await fetch(
+			`https://codeforces.com/api/user.status?handle=${value}&from=${
+				stalkListCnt + 1
+			}&count=${stalkListCnt + 10}`
+		);
+		stalkListCnt += 10;
+		const data = await response.json();
+		stalkRender(data.result);
+		stalkingContent.innerHTML += `<button class="load-more" onclick="stalkLoadEvent(event)">Load More</button>`;
+	})();
 };
 
 toolItems.forEach((item, index) => {
@@ -119,13 +207,7 @@ toolItems.forEach((item, index) => {
 });
 
 // Problemset Handle
-(async () => {
-	const response = await fetch(
-		'https://codeforces.com/api/problemset.problems'
-	);
-	const data = await response.json();
-	const { problemStatistics, problems } = data.result;
-
+(() => {
 	problemsetContainer.innerHTML = `<div class="header"><span>Problemset</span></div>
 									<form class="search-container">
 										<input placeholder="Search by name" type="text" id="nameSearch">
@@ -138,18 +220,18 @@ toolItems.forEach((item, index) => {
 										<div class="all-btn">
 											<button class="submit">Search</button>
 											<button class="random">Random</button>
+											<button class="updateProblemBtn">Update</button>
 										</div>
 									</form>
 									<div class="all-content"></div>`;
 
 	const problemsetAllContent = select(problemsetContainer, '.all-content');
-	problemsetAllContent.innerHTML = getListHTMLS(problems);
 
 	const submitBtn = select(problemsetContainer, '.search-container .submit');
 	submitBtn.onclick = (e) => {
 		e.preventDefault();
 
-		newList = getList(problems);
+		newList = getList(problemsData.problems);
 		newListSize = newList.length;
 		listCnt = newListSize <= 20 ? newListSize : 20;
 		problemsetAllContent.innerHTML = getListHTMLS(newList, 0, listCnt);
@@ -161,13 +243,25 @@ toolItems.forEach((item, index) => {
 	const randomBtn = select(problemsetContainer, '.search-container .random');
 	randomBtn.onclick = (e) => {
 		e.preventDefault();
-		let newList = getList(problems);
+		let newList = getList(problemsData.problems);
 		let listSize = newList.length;
 		let randNum = Math.round(Math.random() * listSize);
 
 		let newListHTMLS = getListHTMLS([newList[randNum]], 0, 1);
 		problemsetAllContent.innerHTML = newListHTMLS;
 	};
+
+	if (!problemsData) {
+		(async () => {
+			const response = await fetch(
+				'https://codeforces.com/api/problemset.problems'
+			);
+			const data = await response.json();
+			problemsData = data.result;
+			localStorage.setItem('problems', JSON.stringify(problemsData));
+		})();
+	}
+	problemsetAllContent.innerHTML = getListHTMLS(problemsData.problems);
 })();
 
 // User Info Handle
@@ -298,9 +392,30 @@ toolItems.forEach((item, index) => {
 	};
 })();
 
-// User Status Handle
+// User Stalking Handle
 (() => {
-	const hello = '';
+	stalkingContainer.innerHTML = `<div class="header"><span>Stalking Mode</span></div>
+								<div class="stalkTools">
+									<input placeholder="Search user by handle" type="text" id="stalkHandle">
+									<button class="clearStalkBtn">Clear</button>
+								</div>
+								<div class="all-content"></div>`;
+
+	stalkingContent = select(stalkingContainer, '.all-content');
+	const searchBar = $('#stalkHandle');
+	searchBar.onkeydown = (e) => {
+		if (e.keyCode !== 13) return;
+
+		(async () => {
+			const value = searchBar.value.trim();
+			const response = await fetch(
+				`https://codeforces.com/api/user.status?handle=${value}&from=1&count=10`
+			);
+			const data = await response.json();
+			stalkRender(data.result);
+			stalkingContent.innerHTML += `<button class="load-more" onclick="stalkLoadEvent(event)">Load More</button>`;
+		})();
+	};
 })();
 
 // Menu Toggle Handle
@@ -309,3 +424,15 @@ toolItems.forEach((item, index) => {
 	const toolMenu = $('.tool-btn');
 	toolMenu.onclick = () => toolContainer.classList.toggle('active');
 })();
+
+$('.clearStalkBtn').onclick = () => (stalkingContent.innerHTML = '');
+$('.updateProblemBtn').onclick = () => {
+	(async () => {
+		const response = await fetch(
+			'https://codeforces.com/api/problemset.problems'
+		);
+		const data = await response.json();
+		problemsData = data.result;
+		localStorage.setItem('problems', JSON.stringify(problemsData));
+	})();
+};

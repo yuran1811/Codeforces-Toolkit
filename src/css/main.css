@@ -3,7 +3,9 @@
 }
 
 * {
+	-webkit-tap-highlight-color: transparent;
 	transition: all 0.2s ease;
+	user-select: none;
 }
 
 body {
@@ -294,6 +296,7 @@ input {
 button {
 	transition: all 0.2s ease;
 	border-radius: 1rem;
+	font-weight: 600;
 	cursor: pointer;
 	font-size: 2rem;
 	margin: 1.2rem;
@@ -311,4 +314,37 @@ button:hover {
 	padding: 2rem;
 	margin: 1.5rem;
 	border-radius: 2rem;
+	position: relative;
+	left: 50%;
+	transform: translateX(-50%);
+}
+.load-more:hover {
+	transform: translateX(-50%) scale(1.2);
+}
+
+.userSubmissionStalk {
+	margin: 1.2rem auto;
+	position: relative;
+	font-size: 2rem;
+	padding: 1.2rem;
+	width: 100%;
+}
+.userSubmissionStalk .problemDetail {
+	text-align: center;
+}
+.userSubmissionStalk .problemRate {
+	font-weight: 800;
+}
+.userSubmissionStalk .problemVerdict {
+	font-weight: 600;
+}
+
+.stalkTools {
+	display: flex;
+}
+.stalkTools input {
+	width: 80%;
+}
+.stalkTools button {
+	flex: 1;
 }
