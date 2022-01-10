@@ -8,6 +8,14 @@ const tools = [
 		icon: '<i class="bi bi-graph-up"></i>',
 	},
 	{
+		name: 'Stalking',
+		icon: '<i class="bi bi-person-bounding-box"></i>',
+	},
+	// {
+	// 	name: 'ProblemSubmission',
+	// 	icon: '<i class="bi bi-ui-radios"></i>',
+	// },
+	{
 		name: 'Problemset',
 		icon: '<i class="bi bi-list-task"></i>',
 	},

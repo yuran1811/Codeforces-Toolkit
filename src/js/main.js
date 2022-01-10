@@ -118,6 +118,7 @@ toolItems.forEach((item, index) => {
 	};
 });
 
+// Problemset Handle
 (async () => {
 	const response = await fetch(
 		'https://codeforces.com/api/problemset.problems'
@@ -169,6 +170,7 @@ toolItems.forEach((item, index) => {
 	};
 })();
 
+// User Info Handle
 (() => {
 	const rankColor = {
 		newbie: '#ccc',
@@ -255,6 +257,7 @@ toolItems.forEach((item, index) => {
 	};
 })();
 
+// User Rating Handle
 (() => {
 	const userRating = $('.main-content.rating');
 	userRating.innerHTML = `<div class="header"><span>User Rating</span></div>
@@ -295,6 +298,12 @@ toolItems.forEach((item, index) => {
 	};
 })();
 
+// User Status Handle
+(() => {
+	const hello = '';
+})();
+
+// Menu Toggle Handle
 (() => {
 	const toolContainer = $('.tool-container');
 	const toolMenu = $('.tool-btn');

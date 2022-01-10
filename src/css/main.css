@@ -73,10 +73,29 @@ body {
 	transition: all 0.2s ease;
 	background-color: aquamarine;
 }
-.tool-brand {
+.tool-brand > span {
+	background-image: linear-gradient(to right, #fc7268, #00aefd, #ffa400);
+	background-size: 300% 300%;
+	-webkit-background-clip: text;
+	background-clip: text;
+	display: inline-block;
+	color: transparent;
+	font-weight: 800;
 	position: fixed;
 	left: 6.2rem;
 	top: 2.1rem;
+	animation: moving 3s ease-in-out alternate infinite;
+}
+@keyframes moving {
+	33.33% {
+		background-position: 100% 300%;
+	}
+	66.67% {
+		background-position: 200% 300%;
+	}
+	100% {
+		background-position: 300% 300%;
+	}
 }
 
 .tool-container.active {
