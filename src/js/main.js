@@ -220,7 +220,7 @@ toolItems.forEach((item, index) => {
 
 // Problemset Handle
 (() => {
-	if (problemsData.hasOwnProperty('problems')) getProblemData();
+	problemsData?.problems || getProblemData();
 
 	problemsetContainer.innerHTML = `<div class="header"><span>Problemset</span></div>
 									<form class="search-container">
