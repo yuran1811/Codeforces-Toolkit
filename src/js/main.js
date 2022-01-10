@@ -65,6 +65,18 @@ const problemStatus = {
 
 const hideAll = (list) => list.forEach((item) => (item.style.display = 'none'));
 
+const getProblemData = () => {
+	async function getData() {
+		const response = await fetch(
+			'https://codeforces.com/api/problemset.problems'
+		);
+		const data = await response.json();
+		problemsData = data.result;
+		localStorage.setItem('problems', JSON.stringify(problemsData));
+	}
+	getData();
+};
+
 const getList = (problems) => {
 	const nameSearch = $('#nameSearch');
 	const tagSearch = $('#tagSearch');
@@ -208,6 +220,8 @@ toolItems.forEach((item, index) => {
 
 // Problemset Handle
 (() => {
+	if (problemsData.hasOwnProperty('problems')) getProblemData();
+
 	problemsetContainer.innerHTML = `<div class="header"><span>Problemset</span></div>
 									<form class="search-container">
 										<input placeholder="Search by name" type="text" id="nameSearch">
@@ -243,6 +257,7 @@ toolItems.forEach((item, index) => {
 	const randomBtn = select(problemsetContainer, '.search-container .random');
 	randomBtn.onclick = (e) => {
 		e.preventDefault();
+
 		let newList = getList(problemsData.problems);
 		let listSize = newList.length;
 		let randNum = Math.round(Math.random() * listSize);
@@ -250,18 +265,6 @@ toolItems.forEach((item, index) => {
 		let newListHTMLS = getListHTMLS([newList[randNum]], 0, 1);
 		problemsetAllContent.innerHTML = newListHTMLS;
 	};
-
-	if (!problemsData) {
-		(async () => {
-			const response = await fetch(
-				'https://codeforces.com/api/problemset.problems'
-			);
-			const data = await response.json();
-			problemsData = data.result;
-			localStorage.setItem('problems', JSON.stringify(problemsData));
-		})();
-	}
-	problemsetAllContent.innerHTML = getListHTMLS(problemsData.problems);
 })();
 
 // User Info Handle
@@ -426,13 +429,7 @@ toolItems.forEach((item, index) => {
 })();
 
 $('.clearStalkBtn').onclick = () => (stalkingContent.innerHTML = '');
-$('.updateProblemBtn').onclick = () => {
-	(async () => {
-		const response = await fetch(
-			'https://codeforces.com/api/problemset.problems'
-		);
-		const data = await response.json();
-		problemsData = data.result;
-		localStorage.setItem('problems', JSON.stringify(problemsData));
-	})();
+$('.updateProblemBtn').onclick = (e) => {
+	e.preventDefault();
+	getProblemData();
 };
