@@ -1,5 +1,8 @@
 :root {
 	--tool-width: 180px;
+	--background: white;
+	--color: black;
+	--borderColor: rgba(0, 0, 0, 0.144);
 }
 
 * {
@@ -10,6 +13,11 @@
 
 body {
 	overflow: hidden;
+}
+body[data-theme='dark'] {
+	--background: rgba(20, 20, 20, 0.932);
+	--color: white;
+	--borderColor: rgba(228, 228, 228, 0.144);
 }
 
 .tool-container {
@@ -22,11 +30,13 @@ body {
 	left: 0;
 	bottom: 0;
 	font-size: 2rem;
+	background-color: var(--background);
 	width: var(--tool-width);
 	transition: all 0.2s ease;
-	border-right: 1px solid rgba(0, 0, 0, 0.144);
+	border-right: 1px solid var(--borderColor);
 }
 .tool-container .tool-item {
+	color: var(--color);
 	position: relative;
 	cursor: pointer;
 	padding: 1.2rem;
@@ -110,6 +120,9 @@ body {
 .tool-container.active .tool-btn:hover {
 	background-color: aquamarine;
 }
+.tool-container.active .tool-item.active {
+	border-right: 0.5rem solid rgb(45, 233, 170);
+}
 .tool-container.active .tool-item > span {
 	display: none;
 }
@@ -123,6 +136,7 @@ body {
 .main-container {
 	position: fixed;
 	left: var(--tool-width);
+	background-color: var(--background);
 	overflow: hidden auto;
 	height: 100vh;
 	width: calc(100vw - var(--tool-width));
@@ -144,9 +158,10 @@ body {
 	padding: 1rem;
 }
 .main-content .header span {
-	position: relative;
-	font-weight: bold;
 	letter-spacing: 0.5rem;
+	color: var(--color);
+	position: relative;
+	font-weight: 500;
 	width: 100%;
 }
 .main-content .header span::after {
@@ -157,7 +172,7 @@ body {
 	left: 50%;
 	transform: translateX(-50%);
 	bottom: -0.9rem;
-	background-color: black;
+	background-color: var(--color);
 }
 .main-content .all-content {
 	position: relative;
@@ -179,9 +194,10 @@ body {
 	transition: all 0.3s ease;
 	border: 0.7rem solid transparent;
 	border-radius: 1.5rem;
+	color: var(--color);
 }
 .main-content .content-item:hover {
-	border-color: black;
+	border-color: var(--color);
 }
 .main-content .content-item__info,
 .main-content .content-item__tags {
@@ -247,7 +263,7 @@ input {
 	transition: all 0.2s ease;
 }
 .main-content .user-item:hover {
-	border-color: black;
+	border-color: var(--color);
 }
 .main-content .user-item .left {
 	display: flex;
@@ -262,10 +278,13 @@ input {
 }
 .main-content .user-item .rating-status {
 	font-weight: bold;
-	color: black;
+	color: var(--color);
 }
 .main-content .user-item .right .email span {
 	font-weight: bold;
+}
+.main-content .user-item .right .friends {
+	color: var(--color);
 }
 
 .main-content.rating .all-content {
@@ -278,7 +297,8 @@ input {
 	font-size: 2.4rem;
 	padding: 1.7rem;
 	margin: 1.5rem;
-	border-bottom: 2px solid black;
+	color: var(--color);
+	border-bottom: 2px solid var(--color);
 }
 .main-content .contest-item .contestId {
 	font-weight: bold;
@@ -328,6 +348,7 @@ button:hover {
 	font-size: 2rem;
 	padding: 1.2rem;
 	width: 100%;
+	color: var(--color);
 }
 .userSubmissionStalk .problemDetail {
 	text-align: center;
@@ -347,4 +368,50 @@ button:hover {
 }
 .stalkTools button {
 	flex: 1;
+}
+
+.theme-container {
+	position: fixed;
+	right: 2rem;
+	top: 2rem;
+	margin: 0;
+	z-index: 10;
+}
+.theme-select {
+	background-color: antiquewhite;
+	border-radius: 3rem;
+	top: 1rem;
+	right: 7rem;
+	display: none;
+	position: absolute;
+	align-items: center;
+	flex-direction: column;
+	justify-content: center;
+}
+.theme-select.active {
+	display: flex;
+}
+.theme-item {
+	position: relative;
+	width: 5rem;
+	height: 5rem;
+	border-radius: 50%;
+	margin: 1rem;
+	z-index: 10;
+	cursor: pointer;
+}
+.themeBtn {
+	position: fixed;
+	top: 2rem;
+	right: 2rem;
+	width: 4.7rem;
+	height: 4.7rem;
+	background-color: aquamarine;
+	margin: 1rem;
+	border-radius: 50%;
+	cursor: pointer;
+}
+
+i[class~='bi'] {
+	color: var(--color);
 }

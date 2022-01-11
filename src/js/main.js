@@ -169,6 +169,9 @@ const stalkRender = (data) => {
 									: user.verdict
 							}</span>
 						</div>
+						<div class="time" style="text-align: center">${new Date(
+							user.creationTimeSeconds * 1000
+						)}</div>
 					</div>`)
 	);
 };
@@ -433,3 +436,31 @@ $('.updateProblemBtn').onclick = (e) => {
 	e.preventDefault();
 	getProblemData();
 };
+
+(() => {
+	const themeList = [
+		{ name: 'light', color: 'white' },
+		{ name: 'dark', color: 'black' },
+	];
+	$('.theme-select').innerHTML = themeList
+		.map(
+			(item) =>
+				`<div class="theme-item" data-theme="${item.name}" style="background-color:${item.color}"></div>`
+		)
+		.join('');
+
+	$('.themeBtn').onclick = (e) => {
+		e.stopPropagation();
+		$('.theme-select').classList.toggle('active');
+	};
+
+	$$('.theme-item').forEach(
+		(item) =>
+			(item.onclick = (e) => {
+				e.stopPropagation();
+				document.body.setAttribute('data-theme', item.dataset.theme);
+			})
+	);
+
+	document.body.onclick = () => $('.theme-select').classList.remove('active');
+})();
