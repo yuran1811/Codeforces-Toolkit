@@ -157,12 +157,25 @@ body[data-theme='dark'] {
 	margin: 0 auto 2rem;
 	padding: 1rem;
 }
-.main-content .header span {
+.main-content .header span,
+.main-content .header .title {
 	letter-spacing: 0.5rem;
 	color: var(--color);
 	position: relative;
+	text-align: center;
 	font-weight: 500;
 	width: 100%;
+	display: block;
+}
+.main-content .header .timeUpdate {
+	color: var(--color);
+	position: relative;
+	font-style: italic;
+	font-weight: 300;
+	font-size: 2rem;
+	padding: 1rem;
+	margin-top: 1.7rem;
+	text-align: center;
 }
 .main-content .header span::after {
 	content: '';

@@ -15,6 +15,7 @@ const stalkingContainer = $('.main-content.stalking');
 let stalkingContent;
 
 let problemsData = JSON.parse(localStorage.getItem('problems')) || {};
+let lastUpdateTime = JSON.parse(localStorage.getItem('timeUpdate')) || '';
 let listCnt = 0;
 let newList = [];
 let newListSize = 0;
@@ -75,6 +76,8 @@ const getProblemData = () => {
 		localStorage.setItem('problems', JSON.stringify(problemsData));
 	}
 	getData();
+	localStorage.setItem('timeUpdate', Date.now());
+	$('.timeUpdate').innerHTML = 'Recently sync';
 };
 
 const getList = (problems) => {
@@ -141,7 +144,7 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 							</div>
 							<div class="content-item__rating">
 								<span class="label">Rating:</span>
-								<span class="rating"> ${item.rating}</span>
+								<span class="rating"> ${item.rating || 'Unknown'}</span>
 							</div>
 						</a>`
 		)
@@ -225,7 +228,16 @@ toolItems.forEach((item, index) => {
 (() => {
 	problemsData?.problems || getProblemData();
 
-	problemsetContainer.innerHTML = `<div class="header"><span>Problemset</span></div>
+	problemsetContainer.innerHTML = `<div class="header">
+										<span class="title">Problemset</span>
+										<div class="timeUpdate">${
+											lastUpdateTime
+												? `Last update: ${new Date(
+														lastUpdateTime
+												  )}`
+												: 'Nothing changes'
+										}</div>
+									</div>
 									<form class="search-container">
 										<input placeholder="Search by name" type="text" id="nameSearch">
 										<input placeholder="Search by tags, split by space" type="text" id="tagSearch">
