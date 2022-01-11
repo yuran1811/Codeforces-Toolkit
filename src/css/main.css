@@ -213,11 +213,11 @@ body[data-theme='dark'] {
 .main-content .content-item__info,
 .main-content .content-item__tags {
 	position: relative;
+	text-align: center;
 	padding: 0.7rem;
 	width: 100%;
 }
 .main-content .content-item__tags {
-	text-align: center;
 	font-style: italic;
 }
 .main-content .content-item__rating {
@@ -256,7 +256,6 @@ input {
 	margin: 1.5rem;
 	padding: 1rem;
 	outline: none;
-	border: none;
 	border-radius: 1rem;
 }
 .search-container .search-by-rating {
