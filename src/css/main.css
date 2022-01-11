@@ -165,17 +165,15 @@ body[data-theme='dark'] {
 	text-align: center;
 	font-weight: 500;
 	width: 100%;
-	display: block;
 }
-.main-content .header .timeUpdate {
+.main-content .timeUpdate {
 	color: var(--color);
 	position: relative;
 	font-style: italic;
+	text-align: center;
 	font-weight: 300;
 	font-size: 2rem;
 	padding: 1rem;
-	margin-top: 1.7rem;
-	text-align: center;
 }
 .main-content .header span::after {
 	content: '';
@@ -251,13 +249,15 @@ input::placeholder {
 	font-family: 'Raleway', sans-serif;
 }
 input {
-	outline: none;
-	max-width: 70rem;
 	width: 75%;
+	max-width: 70rem;
 	height: 3.7rem;
 	font-size: 2rem;
 	margin: 1.5rem;
 	padding: 1rem;
+	outline: none;
+	border: none;
+	border-radius: 1rem;
 }
 .search-container .search-by-rating {
 	display: flex;

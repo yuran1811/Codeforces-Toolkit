@@ -230,14 +230,14 @@ toolItems.forEach((item, index) => {
 
 	problemsetContainer.innerHTML = `<div class="header">
 										<span class="title">Problemset</span>
-										<div class="timeUpdate">${
-											lastUpdateTime
-												? `Last update: ${new Date(
-														lastUpdateTime
-												  )}`
-												: 'Nothing changes'
-										}</div>
 									</div>
+									<div class="timeUpdate">${
+										lastUpdateTime
+											? `Last update: ${new Date(
+													lastUpdateTime
+											  )}`
+											: 'Nothing changes'
+									}</div>
 									<form class="search-container">
 										<input placeholder="Search by name" type="text" id="nameSearch">
 										<input placeholder="Search by tags, split by space" type="text" id="tagSearch">
