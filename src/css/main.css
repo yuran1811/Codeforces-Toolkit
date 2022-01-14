@@ -238,15 +238,15 @@ body[data-theme='dark'] {
 	font-weight: bold;
 }
 
+.main-content.no-tags .content-item__tags {
+	display: none;
+}
+
 .search-container {
 	display: flex;
 	align-items: center;
 	flex-direction: column;
 	justify-content: center;
-}
-input,
-input::placeholder {
-	font-family: 'Raleway', sans-serif;
 }
 input {
 	width: 75%;

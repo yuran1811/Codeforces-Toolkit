@@ -250,6 +250,7 @@ toolItems.forEach((item, index) => {
 											<button class="submit">Search</button>
 											<button class="random">Random</button>
 											<button class="updateProblemBtn">Update</button>
+											<button class="tags-toggle">Hide Tags</button>
 										</div>
 									</form>
 									<div class="all-content"></div>`;
@@ -279,6 +280,18 @@ toolItems.forEach((item, index) => {
 
 		let newListHTMLS = getListHTMLS([newList[randNum]], 0, 1);
 		problemsetAllContent.innerHTML = newListHTMLS;
+	};
+
+	$('.updateProblemBtn').onclick = (e) => {
+		e.preventDefault();
+		getProblemData();
+	};
+
+	$('.tags-toggle').onclick = (e) => {
+		e.preventDefault();
+		problemsetContainer.classList.toggle('no-tags');
+		e.target.innerHTML =
+			e.target.innerHTML === 'Hide Tags' ? 'Show Tags' : 'Hide Tags';
 	};
 })();
 
@@ -434,6 +447,8 @@ toolItems.forEach((item, index) => {
 			stalkingContent.innerHTML += `<button class="load-more" onclick="stalkLoadEvent(event)">Load More</button>`;
 		})();
 	};
+
+	$('.clearStalkBtn').onclick = () => (stalkingContent.innerHTML = '');
 })();
 
 // Menu Toggle Handle
@@ -443,12 +458,7 @@ toolItems.forEach((item, index) => {
 	toolMenu.onclick = () => toolContainer.classList.toggle('active');
 })();
 
-$('.clearStalkBtn').onclick = () => (stalkingContent.innerHTML = '');
-$('.updateProblemBtn').onclick = (e) => {
-	e.preventDefault();
-	getProblemData();
-};
-
+// Theme select Handle
 (() => {
 	const themeList = [
 		{ name: 'light', color: 'white' },
