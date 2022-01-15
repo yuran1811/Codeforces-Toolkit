@@ -399,11 +399,19 @@ toolItems.forEach((item, index) => {
 						<span class="contestId">#${contest.contestId}</span>
 						<span class="contestName">${contest.contestName}</span>
 						<span class="rank">No.${contest.rank}</span>
-						<span class="ratingChange">${contest.oldRating} ${
-					contest.oldRating < contest.newRating
-						? `<i class="bi bi-arrow-up-right"></i>`
-						: `<i class="bi bi-arrow-down-right"></i>`
-				} ${contest.newRating}</span>
+						<div class="ratingChange">
+							<span>${contest.oldRating}</span>
+							${
+								contest.oldRating < contest.newRating
+									? `<i class="bi bi-arrow-up-right"></i>`
+									: `<i class="bi bi-arrow-down-right"></i>`
+							}
+							<span class="newRate ${
+								contest.oldRating < contest.newRating
+									? 'up'
+									: 'down'
+							}">${contest.newRating}</span>
+						</div>
 					</div>`)
 		);
 	};
@@ -418,7 +426,7 @@ toolItems.forEach((item, index) => {
 				`https://codeforces.com/api/user.rating?handle=${value}`
 			);
 			const data = await response.json();
-			renderUserInfo(data.result);
+			renderUserInfo(data.result?.reverse());
 		})();
 	};
 })();

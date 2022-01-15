@@ -264,6 +264,7 @@ input {
 }
 
 .main-content .user-item {
+	color: var(--color);
 	font-size: 2.5rem;
 	padding: 1.5rem;
 	margin: 1.5rem;
@@ -371,6 +372,9 @@ button:hover {
 .userSubmissionStalk .problemVerdict {
 	font-weight: 600;
 }
+.userSubmissionStalk .time {
+	font-style: italic;
+}
 
 .stalkTools {
 	display: flex;
@@ -426,4 +430,14 @@ button:hover {
 
 i[class~='bi'] {
 	color: var(--color);
+}
+
+.newRate {
+	font-weight: 600;
+}
+.newRate.down {
+	color: rgb(243, 63, 63);
+}
+.newRate.up {
+	color: lightgreen;
 }
