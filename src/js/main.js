@@ -307,6 +307,7 @@ toolItems.forEach((item, index) => {
 		'international master': '#fb5',
 		grandmaster: '#f77',
 		'international grandmaster': '#f33',
+		'legendary grandmaster': '#f00',
 	};
 
 	const userContainer = $('.main-content.user');

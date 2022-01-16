@@ -254,9 +254,10 @@ input {
 	height: 3.7rem;
 	font-size: 2rem;
 	margin: 1.5rem;
-	padding: 1rem;
+	padding: 2rem 1rem;
 	outline: none;
-	border-radius: 1rem;
+	border-radius: 2rem;
+	border-color: transparent;
 }
 .search-container .search-by-rating {
 	display: flex;
@@ -432,12 +433,15 @@ i[class~='bi'] {
 	color: var(--color);
 }
 
+i[class*='bi-arrow'],
 .newRate {
-	font-weight: 600;
+	font-weight: 700;
 }
+i.bi-arrow-down-right,
 .newRate.down {
 	color: rgb(243, 63, 63);
 }
+i.bi-arrow-up-right,
 .newRate.up {
 	color: lightgreen;
 }
