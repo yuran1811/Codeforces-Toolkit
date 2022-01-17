@@ -144,7 +144,7 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 							</div>
 							<div class="content-item__rating">
 								<span class="label">Rating:</span>
-								<span class="rating"> ${item.rating || 'Unknown'}</span>
+								<span class="rating"> ${item?.rating || 'Unrated'}</span>
 							</div>
 						</a>`
 		)
@@ -160,7 +160,7 @@ const stalkRender = (data) => {
 					<div class="userSubmissionStalk">
 						<div class="problemDetail">
 							<span class="problemName">${user.problem.name}</span>
-							<span class="problemRate">${user.problem.rating}</span>
+							<span class="problemRate">${user.problem?.rating || 'Unrated'}</span>
 							<span class="problemVerdict" style="color:${
 								problemStatusList.includes(user.verdict)
 									? problemStatus[user.verdict].color
@@ -293,6 +293,80 @@ toolItems.forEach((item, index) => {
 		e.target.innerHTML =
 			e.target.innerHTML === 'Hide Tags' ? 'Show Tags' : 'Hide Tags';
 	};
+})();
+
+// Contest Handle
+(() => {
+	const contestContainer = $('.main-content.contest');
+	contestContainer.innerHTML = `<div class="header"><span>Contest List</span></div>
+								<div class="all-content current"></div>
+								<div class="all-content finished"></div>`;
+
+	const currentContent = select(contestContainer, '.all-content.current');
+	const finishedContent = select(contestContainer, '.all-content.finished');
+
+	currentContent.innerHTML += `<div class="title">Current or Upcoming Contests</div>`;
+	finishedContent.innerHTML += `<div class="title">Contest History</div>`;
+
+	const renderContest = (container, contests, isFin) => {
+		contests.forEach((contest) => {
+			const duration = contest.durationSeconds;
+			const d = Math.floor(duration / (60 * 60 * 24)) || '';
+			const h = Math.floor((duration % (60 * 60 * 24)) / (60 * 60)) || '';
+			const m = Math.floor((duration % (60 * 60)) / 60) || '00';
+			const s = Math.floor(duration % 60) || '';
+			const length = `${d && d + ':'}${h && h + ':'}${m}${s && ':' + s}`;
+
+			const time = new Date(contest.startTimeSeconds * 1000);
+			const startTime = time
+				.toString()
+				.split(' ')
+				.filter((item) => item.includes(':'))
+				.join('');
+
+			const startDate = time
+				.toString()
+				.slice(0, time.toString().indexOf(startTime) - 1);
+
+			if (isFin)
+				container.innerHTML += `
+					<a
+							class="contestInfo-item" target="_blank" rel=”noopener”
+							href="https://codeforces.com/contest/${contest.id}"
+							>
+							<div class="name">${contest.name}</div>
+							<div class="length">${length}</div>
+							<div class="startTime">${`${startDate}, ${startTime}`}</div>
+					</a>`;
+			else
+				container.innerHTML += `
+					<div
+							class="contestInfo-item" target="_blank" rel=”noopener”
+							href="https://codeforces.com/contest/${contest.id}"
+							>
+							<div class="name">${contest.name}</div>
+							<div class="length">${length}</div>
+							<div class="startTime">${`${startDate}, ${startTime}`}</div>
+					</div>`;
+		});
+	};
+
+	(async () => {
+		const response = await fetch('https://codeforces.com/api/contest.list');
+		const data = await response.json();
+		renderContest(
+			currentContent,
+			data.result.filter((item) => item.phase === 'BEFORE'),
+			0
+		);
+		renderContest(
+			finishedContent,
+			data.result
+				.slice(0, 15)
+				.filter((item) => item.phase === 'FINISHED'),
+			1
+		);
+	})();
 })();
 
 // User Info Handle

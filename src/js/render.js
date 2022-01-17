@@ -1,5 +1,9 @@
 const tools = [
 	{
+		name: 'Contest',
+		icon: '<i class="bi bi-card-list"></i>',
+	},
+	{
 		name: 'User',
 		icon: '<i class="bi bi-person-circle"></i>',
 	},

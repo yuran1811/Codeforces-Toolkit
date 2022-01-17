@@ -2,22 +2,25 @@
 	--tool-width: 180px;
 	--background: white;
 	--color: black;
-	--borderColor: rgba(0, 0, 0, 0.144);
+	--borderColor: rgba(0, 0, 0, 0.15);
+	--btn-bg: rgb(80, 79, 79);
 }
 
 * {
 	-webkit-tap-highlight-color: transparent;
-	transition: all 0.2s ease;
+	transition: all 0.23s ease;
 	user-select: none;
+	color: var(--color);
 }
 
 body {
 	overflow: hidden;
 }
 body[data-theme='dark'] {
-	--background: rgba(20, 20, 20, 0.932);
+	--background: rgba(20, 20, 20, 0.93);
 	--color: white;
-	--borderColor: rgba(228, 228, 228, 0.144);
+	--borderColor: rgba(228, 228, 228, 0.15);
+	--btn-bg: rgb(204, 204, 204);
 }
 
 .tool-container {
@@ -252,12 +255,13 @@ input {
 	width: 75%;
 	max-width: 70rem;
 	height: 3.7rem;
-	font-size: 2rem;
 	margin: 1.5rem;
+	font-size: 2rem;
 	padding: 2rem 1rem;
-	outline: none;
 	border-radius: 2rem;
-	border-color: transparent;
+	border-color: var(--borderColor);
+	color: var(--background);
+	outline: none;
 }
 .search-container .search-by-rating {
 	display: flex;
@@ -327,9 +331,48 @@ input {
 	text-decoration: underline;
 }
 
+.main-content.contest .all-content {
+	font-size: 2rem;
+}
+.main-content.contest .title {
+	font-size: 2.4rem;
+	font-weight: bold;
+	margin: 1.6rem;
+}
+.main-content .contestInfo-item {
+	display: flex;
+	justify-content: space-between;
+	margin: 1.2rem 0 1.2rem 1.5rem;
+	padding: 1.5rem 2rem;
+	border-radius: 1.6rem;
+}
+.main-content .contestInfo-item:hover {
+	background-color: var(--color);
+	color: var(--background);
+}
+.main-content .contestInfo-item:hover .name,
+.main-content .contestInfo-item:hover .length,
+.main-content .contestInfo-item:hover .startTime {
+	color: var(--background);
+}
+.main-content .contestInfo-item .name {
+	word-break: break-word;
+	width: 32rem;
+}
+.main-content .contestInfo-item .length {
+	font-weight: 600;
+	text-align: center;
+	width: 8rem;
+}
+.main-content .contestInfo-item .startTime {
+	text-align: right;
+}
+
 button {
+	background-color: var(--btn-bg);
 	transition: all 0.2s ease;
-	border-radius: 1rem;
+	color: var(--background);
+	border-radius: 1.5rem;
 	font-weight: 600;
 	cursor: pointer;
 	font-size: 2rem;
@@ -432,7 +475,6 @@ button:hover {
 i[class~='bi'] {
 	color: var(--color);
 }
-
 i[class*='bi-arrow'],
 .newRate {
 	font-weight: 700;
