@@ -260,7 +260,7 @@ input {
 	padding: 2rem 1rem;
 	border-radius: 2rem;
 	border-color: var(--borderColor);
-	color: var(--background);
+	color: black;
 	outline: none;
 }
 .search-container .search-by-rating {
