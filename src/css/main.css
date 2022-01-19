@@ -132,10 +132,10 @@ body[data-theme='dark'] {
 .tool-container.active .tool-brand {
 	display: none;
 }
-
 .tool-container.active + .main-container {
 	--tool-width: 65px;
 }
+
 .main-container {
 	position: fixed;
 	left: var(--tool-width);
@@ -470,6 +470,12 @@ button:hover {
 	margin: 1rem;
 	border-radius: 50%;
 	cursor: pointer;
+}
+
+.all-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 i[class~='bi'] {

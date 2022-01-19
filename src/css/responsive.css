@@ -1,0 +1,43 @@
+@media screen and (max-width: 950px) {
+	.tool-container {
+		--tool-width: 65px;
+	}
+	.tool-btn,
+	.tool-btn:hover {
+		background-color: aquamarine !important;
+	}
+	.tool-container .tool-item.active {
+		border-right: 0.5rem solid rgb(45, 233, 170);
+	}
+	.tool-container .tool-item > span {
+		display: none;
+	}
+	.tool-container .tool-brand {
+		display: none;
+	}
+	.tool-container + .main-container {
+		--tool-width: 65px;
+	}
+
+	.main-content {
+		padding: 1rem;
+	}
+	.main-content .header {
+		font-size: 3.6rem;
+	}
+	.main-content .header span::after {
+		height: 0.4rem;
+	}
+	.main-content.rating .all-content,
+	.main-content .all-content {
+		width: 100%;
+	}
+	.main-content .user-item .right {
+		text-align: right;
+	}
+	.main-content .contest-item .contestId,
+	.main-content .contest-item .rank,
+	.main-content .user-item .right .email {
+		display: none;
+	}
+}
