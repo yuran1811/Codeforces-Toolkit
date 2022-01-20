@@ -308,6 +308,32 @@ input {
 .main-content.rating .all-content {
 	width: 80%;
 }
+.main-content .problem-item {
+	position: relative;
+}
+.main-content .problem-item i {
+	position: absolute;
+	font-size: 4rem;
+}
+.main-content .problem-item .bmContainer {
+	position: absolute;
+	left: 2rem;
+	top: 2rem;
+	width: 5rem;
+	height: 5rem;
+	z-index: 10;
+}
+.main-content .problem-item .bmContainer > .bi-bookmarks,
+.main-content .problem-item .bmContainer > .bi-bookmarks-fill {
+	z-index: inherit;
+}
+.main-content .problem-item .bmContainer.fill > .bi-bookmarks,
+.main-content .problem-item .bmContainer > .bi-bookmarks-fill {
+	display: none;
+}
+.main-content .problem-item .bmContainer.fill > .bi-bookmarks-fill {
+	display: block;
+}
 .main-content .contest-item {
 	display: flex;
 	align-items: center;
@@ -366,6 +392,20 @@ input {
 }
 .main-content .contestInfo-item .startTime {
 	text-align: right;
+}
+
+.main-content.bookmarks .bmContainer {
+	display: none;
+}
+.main-content.bookmarks .bmark-item {
+	position: relative;
+}
+.main-content.bookmarks .bmark-item > i {
+	font-size: 3.6rem;
+	position: absolute;
+	cursor: pointer;
+	left: 2rem;
+	top: 2rem;
 }
 
 button {
