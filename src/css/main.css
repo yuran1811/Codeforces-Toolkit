@@ -408,6 +408,12 @@ input {
 	top: 2rem;
 }
 
+.main-content.bookmarks .bmark-item > i {
+	left: 3rem;
+	cursor: pointer;
+	z-index: 10;
+}
+
 button {
 	background-color: var(--btn-bg);
 	transition: all 0.2s ease;

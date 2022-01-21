@@ -23,6 +23,10 @@ const tools = [
 		name: 'Problemset',
 		icon: '<i class="bi bi-list-task"></i>',
 	},
+	{
+		name: 'Bookmarks',
+		icon: '<i class="bi bi-bookmarks"></i>',
+	},
 ];
 
 const toolContainer = document.querySelector('.tool-container');

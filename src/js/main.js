@@ -8,14 +8,20 @@ const selectAll = (par, child) => par.querySelectorAll(child);
 
 const problemLink = 'https://codeforces.com/problemset/problem';
 
+const bmNoFill = `<i class="bi bi-bookmarks"></i>`;
+const bmFill = `<i class="bi bi-bookmarks-fill"></i>`;
+
 const toolItems = $$('.tool-item');
 const contents = $$('.main-content');
 const problemsetContainer = $('.main-content.problemset');
 const stalkingContainer = $('.main-content.stalking');
+const bookmarksContainer = $('.main-content.bookmarks');
 let stalkingContent;
 
 let problemsData = JSON.parse(localStorage.getItem('problems')) || {};
 let lastUpdateTime = JSON.parse(localStorage.getItem('timeUpdate')) || '';
+let bmarkData = JSON.parse(localStorage.getItem('bookmarks')) || [];
+
 let listCnt = 0;
 let newList = [];
 let newListSize = 0;
@@ -80,6 +86,56 @@ const getProblemData = () => {
 	$('.timeUpdate').innerHTML = 'Recently sync';
 };
 
+const bmarkRender = () => {
+	const bookmarks = select(bookmarksContainer, '.all-content');
+	bookmarks.innerHTML = bmarkData
+		.map(
+			(item) => `
+				<div class="bmark-item" data-id="${item.id}">
+					<i class="bi bi-x-circle" onclick="bmarkDelete(event)"></i>
+					${item.data}
+				</div>`
+		)
+		.join('');
+	localStorage.setItem('bookmarks', JSON.stringify(bmarkData));
+};
+const bmarkDelete = (e) => {
+	e.stopPropagation();
+	const bmItem = e.target.closest('.bmark-item');
+
+	bmarkData.forEach((item, index) => {
+		if (item.id === bmItem.dataset.id) {
+			bmarkData.splice(index, 1);
+		}
+	});
+	bmarkRender();
+
+	const delList = selectAll(
+		document,
+		`.problem-item[data-problemid="${bmItem.dataset.id}"] .bmContainer`
+	);
+	delList.forEach((item) => item.classList.remove('fill'));
+};
+const bmarksHandle = (e) => {
+	const thisItem = e.currentTarget;
+	const pblemItem = thisItem.closest('.problem-item');
+
+	thisItem.classList.toggle('fill');
+	if (thisItem.className.includes('fill')) {
+		if (!bmarkData.some((item) => item.id === pblemItem.dataset.problemid))
+			bmarkData.push({
+				id: pblemItem.dataset.problemid,
+				data: pblemItem.innerHTML,
+			});
+	} else {
+		bmarkData.forEach((item, index) => {
+			if (item.id === pblemItem.dataset.problemid)
+				bmarkData.splice(index, 1);
+		});
+	}
+	bmarkRender();
+};
+
 const getList = (problems) => {
 	const nameSearch = $('#nameSearch');
 	const tagSearch = $('#tagSearch');
@@ -126,9 +182,20 @@ const getList = (problems) => {
 const getListHTMLS = (list, from = 0, to = 0) => {
 	return list
 		.slice(from, to)
-		.map(
-			(item) => `<a
-							class="content-item" target="_blank" rel=”noopener”
+		.map((item) => {
+			const pblemId = item.contestId + String(item.index.charCodeAt(0));
+			return `
+					<div
+						class="problem-item"
+						data-problemid="${pblemId}">
+						<div class="bmContainer ${
+							bmarkData.some((bm) => bm.id === pblemId) && 'fill'
+						}" onclick="bmarksHandle(event)">
+							${bmNoFill}
+							${bmFill}
+						</div>
+						<a
+							class="content-item" target="_blank" rel="noopener"
 							href="${problemLink}/${item.contestId}/${item.index}">
 							<div class="content-item__info">
 								<span class="content-item__info-index">
@@ -146,8 +213,9 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 								<span class="label">Rating:</span>
 								<span class="rating"> ${item?.rating || 'Unrated'}</span>
 							</div>
-						</a>`
-		)
+						</a>
+					</div>`;
+		})
 		.join('');
 };
 
@@ -178,7 +246,6 @@ const stalkRender = (data) => {
 					</div>`)
 	);
 };
-
 const loadEvent = (e) => {
 	e.target.style.display = 'none';
 	const problemsetAllContent = select(problemsetContainer, '.all-content');
@@ -257,8 +324,8 @@ toolItems.forEach((item, index) => {
 
 	const problemsetAllContent = select(problemsetContainer, '.all-content');
 
-	const submitBtn = select(problemsetContainer, '.search-container .submit');
-	submitBtn.onclick = (e) => {
+	const searchBtn = select(problemsetContainer, '.search-container .submit');
+	searchBtn.onclick = (e) => {
 		e.preventDefault();
 
 		newList = getList(problemsData.problems);
@@ -279,6 +346,7 @@ toolItems.forEach((item, index) => {
 		let randNum = Math.round(Math.random() * listSize);
 
 		let newListHTMLS = getListHTMLS([newList[randNum]], 0, 1);
+
 		problemsetAllContent.innerHTML = newListHTMLS;
 	};
 
@@ -532,6 +600,25 @@ toolItems.forEach((item, index) => {
 	};
 
 	$('.clearStalkBtn').onclick = () => (stalkingContent.innerHTML = '');
+})();
+
+// Bookmarks Handle
+(() => {
+	bookmarksContainer.innerHTML = `<div class="header"><span>Bookmarks</span></div>
+								<div class="bmarkTools">
+									<button class="clearBmarkBtn">Clear</button>
+								</div>
+								<div class="all-content"></div>`;
+	$('.clearBmarkBtn').onclick = () => {
+		bookmarksContainer.querySelector('.all-content').innerHTML = '';
+		selectAll(document, '.bmContainer').forEach((item) =>
+			item.classList.remove('fill')
+		);
+		localStorage.removeItem('bookmarks');
+		bmarkData.length = 0;
+	};
+
+	if (bmarkData) bmarkRender();
 })();
 
 // Menu Toggle Handle
