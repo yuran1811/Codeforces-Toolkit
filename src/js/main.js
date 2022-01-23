@@ -6,11 +6,12 @@ const $$ = document.querySelectorAll.bind(document);
 const select = (par, child) => par.querySelector(child);
 const selectAll = (par, child) => par.querySelectorAll(child);
 
-const PROBLEM_LINK = 'https://codeforces.com/api/problemset.problems';
-const USER_STATUS_LINK = 'https://codeforces.com/api/user.status?handle=';
-const USER_INFO_LINK = 'https://codeforces.com/api/user.info?handles=';
-const USER_RATING_LINK = 'https://codeforces.com/api/user.rating?handle=';
-const CONTEST_LINK = 'https://codeforces.com/api/contest.list';
+const PROBLEM_LINK = 'https://codeforces.com/problemset/problem/';
+const PROBLEM_API = 'https://codeforces.com/api/problemset.problems';
+const USER_STATUS_API = 'https://codeforces.com/api/user.status?handle=';
+const USER_INFO_API = 'https://codeforces.com/api/user.info?handles=';
+const USER_RATING_API = 'https://codeforces.com/api/user.rating?handle=';
+const CONTEST_API = 'https://codeforces.com/api/contest.list';
 
 const bmNoFill = `<i class="bi bi-bookmarks"></i>`;
 const bmFill = `<i class="bi bi-bookmarks-fill"></i>`;
@@ -78,7 +79,7 @@ const hideAll = (list) => list.forEach((item) => (item.style.display = 'none'));
 
 const getProblemData = () => {
 	async function getData() {
-		const response = await fetch(PROBLEM_LINK);
+		const response = await fetch(PROBLEM_API);
 		const data = await response.json();
 		problemsData = data.result;
 		localStorage.setItem('problems', JSON.stringify(problemsData));
@@ -266,7 +267,7 @@ const stalkLoadEvent = (e) => {
 	(async () => {
 		const value = searchBar.value.trim();
 		const response = await fetch(
-			`${USER_STATUS_LINK}${value}&from=${stalkListCnt + 1}&count=${
+			`${USER_STATUS_API}${value}&from=${stalkListCnt + 1}&count=${
 				stalkListCnt + 10
 			}`
 		);
@@ -422,7 +423,7 @@ toolItems.forEach((item, index) => {
 	};
 
 	(async () => {
-		const response = await fetch(CONTEST_LINK);
+		const response = await fetch(CONTEST_API);
 		const data = await response.json();
 		renderContest(
 			currentContent,
@@ -518,7 +519,7 @@ toolItems.forEach((item, index) => {
 
 		(async () => {
 			const value = handleSearch.value.trim();
-			const response = await fetch(`${USER_INFO_LINK}${value}`);
+			const response = await fetch(`${USER_INFO_API}${value}`);
 			const data = await response.json();
 			renderUserInfo(data.result);
 		})();
@@ -565,7 +566,7 @@ toolItems.forEach((item, index) => {
 
 		(async () => {
 			const value = ratingHandleSearch.value.trim();
-			const response = await fetch(`${USER_RATING_LINK}${value}`);
+			const response = await fetch(`${USER_RATING_API}${value}`);
 			const data = await response.json();
 			renderUserInfo(data.result?.reverse());
 		})();
@@ -589,7 +590,7 @@ toolItems.forEach((item, index) => {
 		(async () => {
 			const value = searchBar.value.trim();
 			const response = await fetch(
-				`${USER_STATUS_LINK}${value}&from=1&count=10`
+				`${USER_STATUS_API}${value}&from=1&count=10`
 			);
 			const data = await response.json();
 			stalkRender(data.result);
