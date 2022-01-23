@@ -6,7 +6,11 @@ const $$ = document.querySelectorAll.bind(document);
 const select = (par, child) => par.querySelector(child);
 const selectAll = (par, child) => par.querySelectorAll(child);
 
-const problemLink = 'https://codeforces.com/problemset/problem';
+const PROBLEM_LINK = 'https://codeforces.com/api/problemset.problems';
+const USER_STATUS_LINK = 'https://codeforces.com/api/user.status?handle=';
+const USER_INFO_LINK = 'https://codeforces.com/api/user.info?handles=';
+const USER_RATING_LINK = 'https://codeforces.com/api/user.rating?handle=';
+const CONTEST_LINK = 'https://codeforces.com/api/contest.list';
 
 const bmNoFill = `<i class="bi bi-bookmarks"></i>`;
 const bmFill = `<i class="bi bi-bookmarks-fill"></i>`;
@@ -16,16 +20,6 @@ const contents = $$('.main-content');
 const problemsetContainer = $('.main-content.problemset');
 const stalkingContainer = $('.main-content.stalking');
 const bookmarksContainer = $('.main-content.bookmarks');
-let stalkingContent;
-
-let problemsData = JSON.parse(localStorage.getItem('problems')) || {};
-let lastUpdateTime = JSON.parse(localStorage.getItem('timeUpdate')) || '';
-let bmarkData = JSON.parse(localStorage.getItem('bookmarks')) || [];
-
-let listCnt = 0;
-let newList = [];
-let newListSize = 0;
-let stalkListCnt = 10;
 
 const problemStatusList = [
 	'OK',
@@ -70,13 +64,21 @@ const problemStatus = {
 	},
 };
 
+let problemsData = JSON.parse(localStorage.getItem('problems')) || {};
+let lastUpdateTime = JSON.parse(localStorage.getItem('timeUpdate')) || '';
+let bmarkData = JSON.parse(localStorage.getItem('bookmarks')) || [];
+
+let listCnt = 0;
+let newList = [];
+let newListSize = 0;
+let stalkingContent;
+let stalkListCnt = 10;
+
 const hideAll = (list) => list.forEach((item) => (item.style.display = 'none'));
 
 const getProblemData = () => {
 	async function getData() {
-		const response = await fetch(
-			'https://codeforces.com/api/problemset.problems'
-		);
+		const response = await fetch(PROBLEM_LINK);
 		const data = await response.json();
 		problemsData = data.result;
 		localStorage.setItem('problems', JSON.stringify(problemsData));
@@ -196,7 +198,7 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 						</div>
 						<a
 							class="content-item" target="_blank" rel="noopener"
-							href="${problemLink}/${item.contestId}/${item.index}">
+							href="${PROBLEM_LINK}/${item.contestId}/${item.index}">
 							<div class="content-item__info">
 								<span class="content-item__info-index">
 									${item.index + ' - '}
@@ -264,9 +266,9 @@ const stalkLoadEvent = (e) => {
 	(async () => {
 		const value = searchBar.value.trim();
 		const response = await fetch(
-			`https://codeforces.com/api/user.status?handle=${value}&from=${
-				stalkListCnt + 1
-			}&count=${stalkListCnt + 10}`
+			`${USER_STATUS_LINK}${value}&from=${stalkListCnt + 1}&count=${
+				stalkListCnt + 10
+			}`
 		);
 		stalkListCnt += 10;
 		const data = await response.json();
@@ -420,7 +422,7 @@ toolItems.forEach((item, index) => {
 	};
 
 	(async () => {
-		const response = await fetch('https://codeforces.com/api/contest.list');
+		const response = await fetch(CONTEST_LINK);
 		const data = await response.json();
 		renderContest(
 			currentContent,
@@ -516,9 +518,7 @@ toolItems.forEach((item, index) => {
 
 		(async () => {
 			const value = handleSearch.value.trim();
-			const response = await fetch(
-				`https://codeforces.com/api/user.info?handles=${value}`
-			);
+			const response = await fetch(`${USER_INFO_LINK}${value}`);
 			const data = await response.json();
 			renderUserInfo(data.result);
 		})();
@@ -565,9 +565,7 @@ toolItems.forEach((item, index) => {
 
 		(async () => {
 			const value = ratingHandleSearch.value.trim();
-			const response = await fetch(
-				`https://codeforces.com/api/user.rating?handle=${value}`
-			);
+			const response = await fetch(`${USER_RATING_LINK}${value}`);
 			const data = await response.json();
 			renderUserInfo(data.result?.reverse());
 		})();
@@ -591,7 +589,7 @@ toolItems.forEach((item, index) => {
 		(async () => {
 			const value = searchBar.value.trim();
 			const response = await fetch(
-				`https://codeforces.com/api/user.status?handle=${value}&from=1&count=10`
+				`${USER_STATUS_LINK}${value}&from=1&count=10`
 			);
 			const data = await response.json();
 			stalkRender(data.result);
@@ -634,10 +632,15 @@ toolItems.forEach((item, index) => {
 		{ name: 'light', color: 'white' },
 		{ name: 'dark', color: 'black' },
 	];
+
 	$('.theme-select').innerHTML = themeList
 		.map(
 			(item) =>
-				`<div class="theme-item" data-theme="${item.name}" style="background-color:${item.color}"></div>`
+				`<div
+					class="theme-item"
+					data-theme="${item.name}"
+					style="background-color:${item.color}">
+				</div>`
 		)
 		.join('');
 
