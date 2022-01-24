@@ -7,6 +7,11 @@ const select = (par, child) => par.querySelector(child);
 const selectAll = (par, child) => par.querySelectorAll(child);
 
 const PROBLEM_LINK = 'https://codeforces.com/problemset/problem/';
+const PB_CONTEST_LINK = (item) =>
+	`https://codeforces.com/contest/${item.contestId}/problem/${item.index}`;
+const SUBMIT_LINK = (item) =>
+	`https://codeforces.com/contest/${item.contestId}/submit`;
+
 const PROBLEM_API = 'https://codeforces.com/api/problemset.problems';
 const USER_STATUS_API = 'https://codeforces.com/api/user.status?handle=';
 const USER_INFO_API = 'https://codeforces.com/api/user.info?handles=';
@@ -197,6 +202,20 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 							${bmNoFill}
 							${bmFill}
 						</div>
+						<a
+							class="in-contest-link"
+							target="_blank"
+							rel="noopener"
+							href="${PB_CONTEST_LINK(item)}">
+							<i class="bi bi-box-arrow-in-up-right"></i>
+						</a>
+						<a
+							class="submit-link"
+							target="_blank"
+							rel="noopener"
+							href="${SUBMIT_LINK(item)}">
+							<i class="bi bi-code"></i>
+						</a>
 						<a
 							class="content-item" target="_blank" rel="noopener"
 							href="${PROBLEM_LINK}/${item.contestId}/${item.index}">

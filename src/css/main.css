@@ -317,8 +317,8 @@ input {
 }
 .main-content .problem-item .bmContainer {
 	position: absolute;
-	left: 2rem;
-	top: 2rem;
+	left: 4rem;
+	top: 4rem;
 	width: 5rem;
 	height: 5rem;
 	z-index: 10;
@@ -404,13 +404,8 @@ input {
 	font-size: 3.6rem;
 	position: absolute;
 	cursor: pointer;
-	left: 2rem;
-	top: 2rem;
-}
-
-.main-content.bookmarks .bmark-item > i {
 	left: 3rem;
-	cursor: pointer;
+	top: 2rem;
 	z-index: 10;
 }
 
@@ -522,6 +517,22 @@ button:hover {
 	display: flex;
 	align-items: center;
 	justify-content: center;
+}
+.main-content.bookmarks .bmark-item .in-contest-link,
+.in-contest-link {
+	font-size: 3.6rem;
+	position: absolute;
+	top: 4rem;
+	right: 5rem;
+	z-index: 10;
+}
+.main-content.bookmarks .bmark-item .submit-link,
+.submit-link {
+	font-size: 3.6rem;
+	position: absolute;
+	top: 12rem;
+	right: 5rem;
+	z-index: 10;
 }
 
 i[class~='bi'] {
