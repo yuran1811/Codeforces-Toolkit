@@ -99,7 +99,7 @@ body[data-theme='dark'] {
 	position: fixed;
 	left: 6.2rem;
 	top: 2.1rem;
-	animation: moving 3s ease-in-out alternate infinite;
+	animation: moving 3.5s linear alternate infinite;
 }
 @keyframes moving {
 	33.33% {
@@ -124,7 +124,14 @@ body[data-theme='dark'] {
 	background-color: aquamarine;
 }
 .tool-container.active .tool-item.active {
-	border-right: 0.5rem solid rgb(45, 233, 170);
+	border-right: 0.5rem solid rgb(45, 233, 170) !important;
+}
+.tool-container.active .tool-item {
+	transition: all 0.3s ease;
+	border-right: 0.5rem solid transparent;
+}
+.tool-container.active .tool-item:hover {
+	border-right: 0.5rem solid rgb(65, 65, 192);
 }
 .tool-container.active .tool-item > span {
 	display: none;
@@ -449,7 +456,18 @@ button:hover {
 	color: var(--color);
 }
 .userSubmissionStalk .problemDetail {
+	margin-bottom: 1.2rem;
 	text-align: center;
+	padding: 1.5rem;
+}
+.userSubmissionStalk .problemDetail > span + span {
+	margin-left: 0.5rem;
+}
+.userSubmissionStalk .problemName {
+	padding: 1rem;
+	font-weight: 600;
+	border-radius: 2rem;
+	border: 2px solid var(--color);
 }
 .userSubmissionStalk .problemRate {
 	font-weight: 800;
@@ -523,7 +541,6 @@ button:hover {
 	font-size: 3.6rem;
 	position: absolute;
 	top: 4rem;
-	right: 5rem;
 	z-index: 10;
 }
 .main-content.bookmarks .bmark-item .submit-link,
@@ -531,8 +548,15 @@ button:hover {
 	font-size: 3.6rem;
 	position: absolute;
 	top: 12rem;
-	right: 5rem;
 	z-index: 10;
+}
+.in-contest-link,
+.submit-link {
+	right: 7rem;
+}
+.main-content.bookmarks .bmark-item .in-contest-link,
+.main-content.bookmarks .bmark-item .submit-link {
+	right: 5rem;
 }
 
 i[class~='bi'] {

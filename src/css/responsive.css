@@ -6,6 +6,7 @@
 	.tool-btn:hover {
 		background-color: aquamarine !important;
 	}
+	.tool-container.active .tool-item:hover,
 	.tool-container .tool-item.active {
 		border-right: 0.5rem solid rgb(45, 233, 170);
 	}
