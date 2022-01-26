@@ -225,7 +225,7 @@ body[data-theme='dark'] {
 	position: relative;
 	text-align: center;
 	padding: 0.7rem;
-	width: 100%;
+	width: 80%;
 }
 .main-content .content-item__tags {
 	font-style: italic;
