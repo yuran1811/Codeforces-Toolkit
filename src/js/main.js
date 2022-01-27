@@ -88,10 +88,10 @@ const getProblemData = () => {
 		const data = await response.json();
 		problemsData = data.result;
 		localStorage.setItem('problems', JSON.stringify(problemsData));
+		localStorage.setItem('timeUpdate', Date.now());
+		$('.timeUpdate').innerHTML = 'Recently sync';
 	}
 	getData();
-	localStorage.setItem('timeUpdate', Date.now());
-	$('.timeUpdate').innerHTML = 'Recently sync';
 };
 
 const bmarkRender = () => {
@@ -315,8 +315,6 @@ toolItems.forEach((item, index) => {
 
 // Problemset Handle
 (() => {
-	problemsData?.problems || getProblemData();
-
 	problemsetContainer.innerHTML = `<div class="header">
 										<span class="title">Problemset</span>
 									</div>
@@ -343,6 +341,8 @@ toolItems.forEach((item, index) => {
 										</div>
 									</form>
 									<div class="all-content"></div>`;
+
+	problemsData?.problems || getProblemData();
 
 	const problemsetAllContent = select(problemsetContainer, '.all-content');
 

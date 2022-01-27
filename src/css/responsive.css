@@ -41,4 +41,8 @@
 	.main-content .user-item .right .email {
 		display: none;
 	}
+	.main-content .content-item__info,
+	.main-content .content-item__tags {
+		width: 60%;
+	}
 }
