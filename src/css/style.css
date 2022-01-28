@@ -25,5 +25,5 @@ a:hover,
 a:active,
 a:focus {
 	text-decoration: none;
-	color: black;
+	color: var(--color);
 }

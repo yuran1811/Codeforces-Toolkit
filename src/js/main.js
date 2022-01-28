@@ -243,13 +243,18 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 
 const stalkRender = (data) => {
 	stalkingContent = select(stalkingContainer, '.all-content');
-	stalkingContent.innerHTML;
+	stalkingContent.innerHTML = '';
 	data.forEach(
 		(user) =>
 			(stalkingContent.innerHTML += `
 					<div class="userSubmissionStalk">
 						<div class="problemDetail">
-							<span class="problemName">${user.problem.name}</span>
+							<a
+								class="problemName"
+								href="${PB_CONTEST_LINK(user.problem)}"
+								rel="noopener"
+								target="_blank"
+							>${user.problem.name}</a>
 							<span class="problemRate">${user.problem?.rating || 'Unrated'}</span>
 							<span class="problemVerdict" style="color:${
 								problemStatusList.includes(user.verdict)

@@ -23,6 +23,10 @@ body[data-theme='dark'] {
 	--btn-bg: rgb(204, 204, 204);
 }
 
+.tool-container::-webkit-scrollbar,
+.tool-container::-webkit-scrollbar-thumb {
+	width: 0;
+}
 .tool-container {
 	display: flex;
 	align-items: center;
@@ -33,9 +37,10 @@ body[data-theme='dark'] {
 	left: 0;
 	bottom: 0;
 	font-size: 2rem;
-	background-color: var(--background);
+	overflow: hidden auto;
 	width: var(--tool-width);
 	transition: all 0.2s ease;
+	background-color: var(--background);
 	border-right: 1px solid var(--borderColor);
 }
 .tool-container .tool-item {
