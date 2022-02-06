@@ -651,8 +651,24 @@ toolItems.forEach((item, index) => {
 	toolMenu.onclick = () => toolContainer.classList.toggle('active');
 })();
 
-// Theme select Handle
-(() => {
+// Extra Function
+const disableExtrasActive = () => {
+	const allExtraActive = $$('div.extra-btn');
+	allExtraActive.forEach((item) => item.classList.remove('active'));
+};
+
+const extraBtnHandle = () => {
+	$$('div.extra-btn').forEach((item) => {
+		item.addEventListener('click', (e) => {
+			e.stopPropagation();
+
+			const lastStatus = item.className.includes('active');
+			disableExtrasActive();
+			item.classList.toggle('active', !lastStatus);
+		});
+	});
+};
+const themeHandle = () => {
 	const themeList = [
 		{ name: 'light', color: 'white' },
 		{ name: 'dark', color: 'black' },
@@ -669,18 +685,24 @@ toolItems.forEach((item, index) => {
 		)
 		.join('');
 
-	$('.themeBtn').onclick = (e) => {
+	$$('.theme-item').forEach((item) => {
+		item.onclick = (e) => {
+			e.stopPropagation();
+			document.body.setAttribute('data-theme', item.dataset.theme);
+		};
+	});
+};
+const calcHandle = () => {
+	const calcSimulator = $('.calc-simulator');
+	calcSimulator.onclick = (e) => {
 		e.stopPropagation();
-		$('.theme-select').classList.toggle('active');
 	};
+};
 
-	$$('.theme-item').forEach(
-		(item) =>
-			(item.onclick = (e) => {
-				e.stopPropagation();
-				document.body.setAttribute('data-theme', item.dataset.theme);
-			})
-	);
-
-	document.body.onclick = () => $('.theme-select').classList.remove('active');
+(() => {
+	extraBtnHandle();
+	themeHandle();
+	calcHandle();
 })();
+
+addEventListener('click', disableExtrasActive);

@@ -6,17 +6,16 @@
 	padding: 0;
 	margin: 0;
 }
-
-html {
-	font-size: 62.5%;
-}
-
 *::-webkit-scrollbar {
 	width: 7px;
 }
 *::-webkit-scrollbar-thumb {
 	background: grey;
 	border-radius: 10px;
+}
+
+html {
+	font-size: 62.5%;
 }
 
 a:link,
@@ -26,4 +25,17 @@ a:active,
 a:focus {
 	text-decoration: none;
 	color: var(--color);
+}
+
+input {
+	width: 75%;
+	max-width: 70rem;
+	height: 3.7rem;
+	margin: 1.5rem;
+	font-size: 2rem;
+	padding: 2rem 1rem;
+	border-radius: 2rem;
+	border-color: var(--borderColor);
+	color: black;
+	outline: none;
 }
