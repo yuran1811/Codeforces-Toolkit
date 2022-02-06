@@ -494,6 +494,9 @@ button:hover {
 .calc-container {
 	top: 9rem;
 }
+.graph-container {
+	top: 16rem;
+}
 
 .theme-select {
 	background-color: antiquewhite;
