@@ -694,8 +694,58 @@ const themeHandle = () => {
 };
 const calcHandle = () => {
 	const calcSimulator = $('.calc-simulator');
-	calcSimulator.onclick = (e) => {
-		e.stopPropagation();
+	const calcOutput = $('#out-res');
+	const inpNum = $('#inp-num');
+	const inpOperator = $('#inp-operator');
+	calcSimulator.onclick = (e) => e.stopPropagation();
+	calcSimulator.oninput = () => {
+		if (!inpNum.value || !inpOperator.value) return;
+
+		const numArray = inpNum.value
+			.trim()
+			.split(',')
+			.map((item) => (item ? +item : 0));
+		const opeArray = inpOperator.value.trim().split(',');
+		const numArrayLth = numArray.length;
+
+		let res = numArray[0];
+		for (let i = 1; i < numArrayLth; i++) {
+			switch (opeArray[i - 1]) {
+				case '&':
+					res &= numArray[i];
+					break;
+				case '|':
+					res |= numArray[i];
+					break;
+				case '^':
+					res ^= numArray[i];
+					break;
+				case '+':
+					res += numArray[i];
+					break;
+				case '-':
+					res -= numArray[i];
+					break;
+				case '*':
+					res *= numArray[i];
+					break;
+				case '%':
+					res %= numArray[i];
+					break;
+				case '/':
+					if (numArray[i]) res /= numArray[i];
+					else {
+						calcOutput.innerHTML =
+							'Error! Becareful when divide by 0';
+						return;
+					}
+					break;
+				default:
+					calcOutput.innerHTML = 'Invalid operator input!';
+					break;
+			}
+		}
+		calcOutput.innerHTML = res;
 	};
 };
 

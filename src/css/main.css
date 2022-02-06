@@ -537,14 +537,14 @@ button:hover {
 	right: 7rem;
 	width: 65vw;
 	max-width: 70rem;
-	height: 15rem;
+	height: 25rem;
 	position: absolute;
 	display: none;
 	align-items: center;
 	flex-direction: column;
 	justify-content: center;
 	border-radius: 2.5rem;
-	background-color: rgba(0, 0, 0, 0.6);
+	background-color: rgba(0, 0, 0, 0.8);
 }
 .calcBtn.active + .calc-simulator {
 	display: flex;
@@ -552,6 +552,10 @@ button:hover {
 .calc-simulator input {
 	max-width: unset;
 	width: 90%;
+}
+.calc-simulator #out-res {
+	padding: 1rem;
+	font-size: 3rem;
 }
 
 .all-btn {

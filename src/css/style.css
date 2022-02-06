@@ -27,7 +27,8 @@ a:focus {
 	color: var(--color);
 }
 
-input {
+input,
+output {
 	width: 75%;
 	max-width: 70rem;
 	height: 3.7rem;
@@ -36,6 +37,7 @@ input {
 	padding: 2rem 1rem;
 	border-radius: 2rem;
 	border-color: var(--borderColor);
+	background-color: var(--color);
 	color: black;
 	outline: none;
 }
