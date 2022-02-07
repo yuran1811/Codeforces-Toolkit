@@ -17,47 +17,74 @@ let mouseMove = 0;
 let moveSpeed = 3;
 
 // Function
-const addNodeInfo = (id, list = []) => {
-	nodeListContent.innerHTML += `
-		<div
-			class="node-info" 
-			data-value="${id}"
-		>
-			<button
-				class="node-remove"
-				onclick="
-				const infoEl = this.closest('.node-info');
-					nodeList.forEach((item, index) => {
-						if (item.value === +infoEl.dataset.value) {
-							nodeList.splice(index, 1);
-							infoEl.style.display = 'none';
-							update();
-							return;
-						}
-					})
-				"
-			>x</button>
-			<input
-				class="node-from"
-				value="${id}">
-			<input 
-				oninput="
+const addNodeInfo = (id) => {
+	nodeListContent.insertAdjacentHTML(
+		'beforeend',
+		`<div
+				class="node-info" 
+				data-value="${id}"
+			>
+				<button
+					class="node-remove"
+					onclick="
 					const infoEl = this.closest('.node-info');
-					nodeList.forEach((item, index) => {
-						if (item.value === +infoEl.dataset.value) {
-							item.textNode = this.value;
-							update();
-						}
-					})
-					update()
-				"
-				type="number"
-				class="node-weight">
-			<input
-				type="text"
-				class="node-to"
-				value="${list.map((item) => item.value).join(',')}">
-		</div>`;
+						nodeList.forEach((item, index) => {
+							if (item.value === +infoEl.dataset.value) {
+								nodeList.splice(index, 1);
+								update();
+								infoEl.remove();
+								return;
+							}
+						})
+					"
+				>x</button>
+				<input
+					onchange="
+					// 	const infoEl = this.closest('.node-info');
+					// 	nodeList.forEach(item => {
+					// 		if (item.value === +infoEl.dataset.value) {
+					// 			item.textNode = this.value;
+					// 			console.log(this.value);
+					// 			update();
+					// 		}
+					// 	})
+					"
+					class="node-from"
+					value="${id}"
+				>
+				<input 
+					type="number"
+					class="node-weight"
+				>
+				<input
+					onchange="
+						const infoEl = this.closest('.node-info');
+						const _this = this;
+						nodeList.forEach(item => {
+							if (item.value === +infoEl.dataset.value) {
+								const inpList = [..._this.value.split(',').map(val => +val)];
+								const newNodeList = nodeList.map((node, index) => ({
+									item: node,
+									id: index
+								}));
+
+								item.listAdjTo.length = 0;
+								inpList.forEach(inp => {
+									const idOf = newNodeList.map(x => x.item.value).indexOf(inp);
+									if (idOf > -1)
+										item.listAdjTo.push(nodeList[idOf]);
+								})
+
+								_this.setAttribute('value', item.listAdjTo.map(item => item.value).join(','));
+								update();
+							}
+						})"
+					type="text"
+					class="node-to"
+					value=""
+				>
+			</div>`
+	);
 	update();
 };
 const calcDist = ({ a, b }, { x, y }) => (a - x) ** 2 + (b - y) ** 2;
@@ -69,17 +96,8 @@ const trimArray = (list) => {
 		return a.y - b.y;
 	});
 
-	let index = 0;
-	let last = list[index++];
-	const r = +nodeRadiusEl.value;
-	while (index < list.length) {
-		if (calcDist({ a: last.x, b: last.y }, list[index]) <= 4 * r * r) {
-			list.splice(index, 1);
-		} else {
-			last = list[index];
-			index++;
-		}
-	}
+	for (let i = 1; i < list.length; i++)
+		if (list[i].value === list[i - 1].value) list.splice(i, 1);
 };
 
 const drawPoint = (item) => {
@@ -121,14 +139,14 @@ const drawLine = (a, b) => {
 	c.closePath();
 };
 const drawNodeValue = (item) => {
-	const { x, y, value } = item;
+	const { x, y, textNode } = item;
 
 	c.beginPath();
 	c.font = '35px Trebuchet MS';
 	c.fillStyle = '#ffffff';
 	c.fillText(
-		value,
-		x + coor.x - (10 + 10 * Math.floor(Math.log10(item.value))),
+		textNode,
+		x + coor.x - (10 + 10 * Math.floor(Math.log10(+item.textNode))),
 		y + coor.y + 10
 	);
 	c.closePath();
@@ -203,15 +221,18 @@ const addNode = (e, f) => {
 	let key = e.key;
 
 	if (array[key]) {
+		let idx = 1;
+		while (nodeList.some((item) => item.value === idx)) idx++;
+
 		array[key].push({
 			x: f.clientX - coor.x,
 			y: f.clientY - coor.y,
 			weight: 0,
 			listAdjTo: [],
-			value: nodeList.length + 1,
-			textNode: nodeList.length + 1,
+			value: idx,
+			textNode: idx,
 		});
-		addNodeInfo(nodeList.length);
+		addNodeInfo(idx);
 	}
 };
 let moveNode;
@@ -229,8 +250,33 @@ const tool = {
 	run: {
 		d: (area) => {
 			nodeList.forEach((item, index) => {
-				if (checkInside(area, item)) nodeList.splice(index, 1);
-				update();
+				if (checkInside(area, item)) {
+					nodeList.forEach((node) => {
+						const idOf = node.listAdjTo
+							.map((adj) => adj.value)
+							.indexOf(item.value);
+						if (idOf > -1) node.listAdjTo.splice(idOf, 1);
+
+						document
+							.querySelector(
+								`.node-info[data-value="${node.value}"]`
+							)
+							.querySelector('.node-to').value = node.listAdjTo
+							.map((adj) => adj.value)
+							.join(',');
+					});
+
+					nodeList.splice(index, 1);
+					nodeListContent
+						.querySelectorAll('.node-info')
+						.forEach((node) => {
+							if (item.value === +node.dataset.value) {
+								update();
+								node.remove();
+								return;
+							}
+						});
+				}
 			});
 		},
 		s: (area) => {
@@ -273,6 +319,34 @@ const mouse = {
 };
 
 // Add Event
+const addHandle = () => {
+	let nowNode = {
+		a: Math.random() * innerWidth + coor.x,
+		b: Math.random() * innerHeight + coor.y,
+	};
+	let r = nodeRadiusEl.value;
+	while (
+		nodeList.length &&
+		!nodeList.every((item) => calcDist(nowNode, item) > 4 * r * r)
+	) {
+		nowNode.a = Math.random() * (innerWidth - 300) - coor.x;
+		nowNode.b = Math.random() * (innerHeight - 300) - coor.y;
+	}
+
+	let idx = 1;
+	while (nodeList.some((item) => item.value === idx)) idx++;
+	nodeList.push({
+		x: nowNode.a,
+		y: nowNode.b,
+		weight: 0,
+		listAdjTo: [],
+		value: idx,
+		textNode: idx,
+	});
+	addNodeInfo(idx);
+};
+addNodeBtn.onclick = addHandle;
+
 window.onresize = () => {
 	canvas.width = innerWidth;
 	canvas.height = innerHeight;
@@ -335,29 +409,3 @@ addEventListener('keydown', (e) => {
 });
 
 update();
-
-// Add Node Button Handle
-addNodeBtn.onclick = () => {
-	let nowNode = {
-		a: Math.random() * innerWidth + coor.x,
-		b: Math.random() * innerHeight + coor.y,
-	};
-	let r = nodeRadiusEl.value;
-	while (
-		nodeList.length &&
-		!nodeList.every((item) => calcDist(nowNode, item) > 4 * r * r)
-	) {
-		nowNode.a = Math.random() * (innerWidth - 300) - coor.x;
-		nowNode.b = Math.random() * (innerHeight - 300) - coor.y;
-	}
-
-	nodeList.push({
-		x: nowNode.a,
-		y: nowNode.b,
-		weight: 0,
-		listAdjTo: [],
-		value: nodeList.length + 1,
-		textNode: nodeList.length + 1,
-	});
-	addNodeInfo(nodeList.length);
-};
