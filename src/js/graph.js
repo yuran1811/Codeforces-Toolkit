@@ -17,72 +17,79 @@ let mouseMove = 0;
 let moveSpeed = 3;
 
 // Function
+function nodeRemoveBtn(thisEle) {
+	const infoEl = thisEle.closest('.node-info');
+	nodeList.forEach((item, index) => {
+		if (item.value === +infoEl.dataset.value) {
+			nodeList.splice(index, 1);
+			update();
+			infoEl.remove();
+			return;
+		}
+	});
+}
+function nodeFromHandle(thisEle) {
+	// 	const infoEl = thisEle.closest('.node-info');
+	// 	nodeList.forEach(item => {
+	// 		if (item.value === +infoEl.dataset.value) {
+	// 			item.textNode = thisEle.value;
+	// 			update();
+	// 		}
+	// 	})
+}
+function nodeToHandle(thisEle) {
+	const infoEl = thisEle.closest('.node-info');
+	const _this = thisEle;
+	nodeList.forEach((mainItem) => {
+		if (mainItem.value === +infoEl.dataset.value) {
+			const inpList = [
+				..._this.value.split(',').map((val) => {
+					const newArr = val.split(':');
+					return {
+						value: +newArr[0],
+						weight: newArr[1] || '0',
+					};
+				}),
+			];
+			const newNodeList = nodeList.map((node, index) => ({
+				item: node,
+				id: index,
+			}));
+
+			mainItem.listAdjTo.length = 0;
+			inpList.forEach((inp) => {
+				const idOf = newNodeList
+					.map((x) => x.item.value)
+					.indexOf(inp.value);
+				if (idOf > -1) {
+					mainItem.listAdjTo.push({
+						item: nodeList[idOf],
+						weight: inp.weight,
+					});
+				}
+			});
+
+			_this.setAttribute(
+				'value',
+				mainItem.listAdjTo
+					.map((item) => {
+						return item.item.value + ':' + item.weight;
+					})
+					.join(',')
+			);
+			update();
+		}
+	});
+}
+
 const addNodeInfo = (id) => {
 	nodeListContent.insertAdjacentHTML(
 		'beforeend',
-		`<div
-				class="node-info" 
-				data-value="${id}"
-			>
-				<button
-					class="node-remove"
-					onclick="
-					const infoEl = this.closest('.node-info');
-						nodeList.forEach((item, index) => {
-							if (item.value === +infoEl.dataset.value) {
-								nodeList.splice(index, 1);
-								update();
-								infoEl.remove();
-								return;
-							}
-						})
-					"
-				>x</button>
-				<input
-					onchange="
-					// 	const infoEl = this.closest('.node-info');
-					// 	nodeList.forEach(item => {
-					// 		if (item.value === +infoEl.dataset.value) {
-					// 			item.textNode = this.value;
-					// 			console.log(this.value);
-					// 			update();
-					// 		}
-					// 	})
-					"
-					class="node-from"
-					value="${id}"
-				>
-				<input 
-					type="number"
-					class="node-weight"
-				>
-				<input
-					onchange="
-						const infoEl = this.closest('.node-info');
-						const _this = this;
-						nodeList.forEach(item => {
-							if (item.value === +infoEl.dataset.value) {
-								const inpList = [..._this.value.split(',').map(val => +val)];
-								const newNodeList = nodeList.map((node, index) => ({
-									item: node,
-									id: index
-								}));
-
-								item.listAdjTo.length = 0;
-								inpList.forEach(inp => {
-									const idOf = newNodeList.map(x => x.item.value).indexOf(inp);
-									if (idOf > -1)
-										item.listAdjTo.push(nodeList[idOf]);
-								})
-
-								_this.setAttribute('value', item.listAdjTo.map(item => item.value).join(','));
-								update();
-							}
-						})"
-					type="text"
-					class="node-to"
-					value=""
-				>
+		`<div class="node-info" data-value="${id}">
+				<button class="node-remove" onclick="nodeRemoveBtn(this)">x</button>
+				<input class="node-from" value="${id}" onchange="nodeFromHandle(this)">
+				<input type="number" class="node-weight">
+				<input type="text" class="node-to" value="" onchange="nodeToHandle(this)">
 			</div>`
 	);
 	update();
@@ -95,7 +102,6 @@ const trimArray = (list) => {
 		if (a.x > b.x) return 1;
 		return a.y - b.y;
 	});
-
 	for (let i = 1; i < list.length; i++)
 		if (list[i].value === list[i - 1].value) list.splice(i, 1);
 };
@@ -137,6 +143,8 @@ const drawLine = (a, b) => {
 	c.lineWidth = +strokeWidthEl.value;
 	c.stroke();
 	c.closePath();
+
+	drawEdgeWeight(a, b);
 };
 const drawNodeValue = (item) => {
 	const { x, y, textNode } = item;
@@ -148,6 +156,22 @@ const drawNodeValue = (item) => {
 		textNode,
 		x + coor.x - (10 + 10 * Math.floor(Math.log10(+item.textNode))),
 		y + coor.y + 10
+	);
+	c.closePath();
+};
+const drawEdgeWeight = (a, b) => {
+	let newList = a.listAdjTo.map((item) => item.item.value);
+	let idx = newList.indexOf(b.value);
+	let weight = a.listAdjTo[idx].weight;
+	if (!weight || weight == 0) return;
+
+	c.beginPath();
+	c.font = '40px Trebuchet MS';
+	c.fillStyle = '#ffffff';
+	c.fillText(
+		weight,
+		(a.x + b.x) / 2 + coor.x + 10,
+		(a.y + b.y) / 2 + coor.y + 10
 	);
 	c.closePath();
 };
@@ -178,11 +202,13 @@ const update = () => {
 
 	trimArray(nodeList);
 	nodeList.forEach((item) => {
-		trimArray(item.listAdjTo);
+		// trimArray(item.listAdjTo);
 		item.listAdjTo.forEach((adjItem) => {
-			if (item.x === adjItem.x && item.y === adjItem.y) return;
-			if (nodeList.includes(adjItem)) {
-				drawLine(item, adjItem);
+			if (item.x === adjItem.item.x && item.y === adjItem.item.y) return;
+			if (
+				nodeList.map((node) => node.value).includes(adjItem.item.value)
+			) {
+				drawLine(item, adjItem.item);
 				// drawDir(item, adjItem);
 			}
 		});
@@ -228,9 +254,9 @@ const addNode = (e, f) => {
 			x: f.clientX - coor.x,
 			y: f.clientY - coor.y,
 			weight: 0,
-			listAdjTo: [],
 			value: idx,
 			textNode: idx,
+			listAdjTo: [],
 		});
 		addNodeInfo(idx);
 	}
@@ -253,7 +279,7 @@ const tool = {
 				if (checkInside(area, item)) {
 					nodeList.forEach((node) => {
 						const idOf = node.listAdjTo
-							.map((adj) => adj.value)
+							.map((adj) => adj.item.value)
 							.indexOf(item.value);
 						if (idOf > -1) node.listAdjTo.splice(idOf, 1);
 
@@ -262,7 +288,7 @@ const tool = {
 								`.node-info[data-value="${node.value}"]`
 							)
 							.querySelector('.node-to').value = node.listAdjTo
-							.map((adj) => adj.value)
+							.map((adj) => `${adj.item.value}:${adj.weight}`)
 							.join(',');
 					});
 
@@ -291,18 +317,20 @@ const tool = {
 			);
 
 			strokeList.forEach(
-				(item) => item.value !== root.value && root.listAdjTo.push(item)
+				(item) =>
+					item.value !== root.value &&
+					root.listAdjTo.push({ item: item, weight: 0 })
 			);
 			strokeList.length = 0;
 			update();
 
 			if (nodeListContent)
 				rootInfo.querySelector('.node-to').value = root.listAdjTo
-					.map((item) => item.value)
+					.map((item) => `${item.item.value}:${item.weight}`)
 					.join(',');
 		},
 		x: () => {
-			moveSpeed = moveSpeed === 12 ? 3 : 12;
+			moveSpeed = moveSpeed === 14 ? 4 : 14;
 		},
 	},
 };
