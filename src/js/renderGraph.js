@@ -3,27 +3,42 @@
 		{
 			name: 'Node Radius',
 			input: 'number',
-			value: 30,
-		},
-		{
-			name: 'Node Color',
-			input: 'color',
-			value: '#6399C5',
+			value: 25,
+			colorList: [
+				{
+					name: 'Node Color',
+					input: 'color',
+					value: '#6ad468',
+				},
+				{
+					name: 'Node Value Color',
+					input: 'color',
+					value: '#ffffff',
+				},
+			],
 		},
 		{
 			name: 'Edge Width',
 			input: 'number',
-			value: 12,
-		},
-		{
-			name: 'Edge Color',
-			input: 'color',
-			value: '#FFCCCC',
+			value: 6,
+			colorList: [
+				{
+					name: 'Edge Color',
+					input: 'color',
+					value: '#ce5050',
+				},
+				{
+					name: 'Edge Value Color',
+					input: 'color',
+					value: '#ffffff',
+				},
+			],
 		},
 		{
 			name: 'Background',
 			input: 'color',
 			value: '#000000',
+			colorList: [],
 		},
 	];
 
@@ -32,9 +47,23 @@
 			${configs
 				.map(
 					(item) => `
-					<div class="${item.name.toLowerCase().split(' ').join('-')}">
+					<div>
 						<span class="label">${item.name}</span>
-						<input type="${item.input}" value="${item.value}">
+						<input
+							class="${item.name.toLowerCase().split(' ').join('-')}"
+							type="${item.input}" value="${item.value}"
+						>
+							${item?.colorList
+								.map(
+									(color) =>
+										`<input class="${color.name
+											.toLowerCase()
+											.split(' ')
+											.join('-')}" type="${
+											color.input
+										}" value="${color.value}">`
+								)
+								.join('')}
 					</div>`
 				)
 				.join('')}

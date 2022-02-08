@@ -1,8 +1,10 @@
-const backgroundEl = document.querySelector('.background input');
-const strokeWidthEl = document.querySelector('.edge-width input');
-const nodeRadiusEl = document.querySelector('.node-radius input');
-const strokeColorEl = document.querySelector('.edge-color input');
-const nodeColorEl = document.querySelector('.node-color input');
+const backgroundEl = document.querySelector('.background');
+const nodeRadiusEl = document.querySelector('.node-radius');
+const nodeColorEl = document.querySelector('.node-color');
+const nodeValueColorEl = document.querySelector('.node-value-color');
+const strokeWidthEl = document.querySelector('.edge-width');
+const strokeColorEl = document.querySelector('.edge-color');
+const edgeValueColorEl = document.querySelector('.edge-value-color');
 const nodeListContent = document.querySelector('.node-list .content');
 const addNodeBtn = document.querySelector('.add-btn');
 const canvas = document.querySelector('#app');
@@ -24,7 +26,19 @@ function nodeRemoveBtn(thisEle) {
 			nodeList.splice(index, 1);
 			update();
 			infoEl.remove();
-			return;
+
+			nodeList.forEach((node) => {
+				const idOf = node.listAdjTo
+					.map((adj) => adj.item.value)
+					.indexOf(item.value);
+				if (idOf > -1) node.listAdjTo.splice(idOf, 1);
+
+				document
+					.querySelector(`.node-info[data-value="${node.value}"]`)
+					.querySelector('.node-to').value = node.listAdjTo
+					.map((adj) => `${adj.item.value}:${adj.weight}`)
+					.join(',');
+			});
 		}
 	});
 }
@@ -43,13 +57,16 @@ function nodeToHandle(thisEle) {
 	nodeList.forEach((mainItem) => {
 		if (mainItem.value === +infoEl.dataset.value) {
 			const inpList = [
-				..._this.value.split(',').map((val) => {
-					const newArr = val.split(':');
-					return {
-						value: +newArr[0],
-						weight: newArr[1] || '0',
-					};
-				}),
+				..._this.value
+					.trim()
+					.split(',')
+					.map((val) => {
+						const newArr = val.split(':');
+						return {
+							value: +newArr[0],
+							weight: newArr[1] || '0',
+						};
+					}),
 			];
 			const newNodeList = nodeList.map((node, index) => ({
 				item: node,
@@ -81,7 +98,6 @@ function nodeToHandle(thisEle) {
 		}
 	});
 }
-
 const addNodeInfo = (id) => {
 	nodeListContent.insertAdjacentHTML(
 		'beforeend',
@@ -94,6 +110,7 @@ const addNodeInfo = (id) => {
 	);
 	update();
 };
+
 const calcDist = ({ a, b }, { x, y }) => (a - x) ** 2 + (b - y) ** 2;
 const trimArray = (list) => {
 	if (list.length < 2) return;
@@ -104,6 +121,16 @@ const trimArray = (list) => {
 	});
 	for (let i = 1; i < list.length; i++)
 		if (list[i].value === list[i - 1].value) list.splice(i, 1);
+};
+const trimAdjArray = (list) => {
+	if (list.length < 2) return;
+	list.sort((a, b) => {
+		if (a.x < b.x) return -1;
+		if (a.x > b.x) return 1;
+		return a.y - b.y;
+	});
+	for (let i = 1; i < list.length; i++)
+		if (list[i].item.value === list[i - 1].item.value) list.splice(i, 1);
 };
 
 const drawPoint = (item) => {
@@ -151,7 +178,7 @@ const drawNodeValue = (item) => {
 
 	c.beginPath();
 	c.font = '35px Trebuchet MS';
-	c.fillStyle = '#ffffff';
+	c.fillStyle = nodeValueColorEl.value;
 	c.fillText(
 		textNode,
 		x + coor.x - (10 + 10 * Math.floor(Math.log10(+item.textNode))),
@@ -167,7 +194,7 @@ const drawEdgeWeight = (a, b) => {
 
 	c.beginPath();
 	c.font = '40px Trebuchet MS';
-	c.fillStyle = '#ffffff';
+	c.fillStyle = edgeValueColorEl.value;
 	c.fillText(
 		weight,
 		(a.x + b.x) / 2 + coor.x + 10,
@@ -192,7 +219,7 @@ const drawNodeWeight = (item) => {
 
 	c.beginPath();
 	c.font = '40px Trebuchet MS';
-	c.fillStyle = '#ffffff';
+	c.fillStyle = nodeValueColorEl.value;
 	c.fillText(weight, x + coor.x, y + coor.y - dist);
 	c.closePath();
 };
@@ -202,7 +229,7 @@ const update = () => {
 
 	trimArray(nodeList);
 	nodeList.forEach((item) => {
-		// trimArray(item.listAdjTo);
+		trimAdjArray(item.listAdjTo);
 		item.listAdjTo.forEach((adjItem) => {
 			if (item.x === adjItem.item.x && item.y === adjItem.item.y) return;
 			if (
@@ -223,6 +250,7 @@ const update = () => {
 
 	// localStorage.setItem('nodeList', JSON.stringify(nodeList));
 };
+
 const checkInside = ({ a, b }, { x, y }, r = +nodeRadiusEl.value) =>
 	calcDist({ a, b }, { x, y }) < r * r;
 const moveSpace = (e) => {

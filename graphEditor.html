@@ -6,6 +6,9 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" href="./src/img/graph.png" />
 		<style>
+			:root {
+				--text-size: 2rem;
+			}
 			* {
 				font-family: 'Trebuchet MS', sans-serif;
 				box-sizing: border-box;
@@ -36,23 +39,27 @@
 				display: flex;
 				z-index: 10;
 			}
-			.config > div {
+			.container .config > div {
 				display: flex;
 				align-items: center;
 				justify-content: space-between;
 			}
 			.container input,
-			.config .label {
-				font-size: 3rem;
+			.container .config .label {
+				font-size: var(--text-size);
 			}
 			.container input {
-				width: 14rem;
+				width: 10rem;
 				border: none;
 				outline: none;
 				padding: 1rem;
-				height: 5.2rem;
-				margin: 0.5rem 1rem;
+				margin: 0.5rem;
+				min-height: 4rem;
 				border-radius: 1rem;
+			}
+			.container input[type='color'] {
+				width: 5rem;
+				height: 5rem;
 			}
 
 			.node-list {
@@ -69,26 +76,44 @@
 				max-height: 30rem;
 				width: 100%;
 			}
+
 			.node-list .content button {
+				position: relative;
+				margin: 1rem;
+				width: 3.6rem;
+				height: 3.6rem;
+				border: none;
 				outline: none;
 				cursor: pointer;
-				font-size: 2.5rem;
-				border-radius: 50%;
-				margin: 0.5rem 1rem;
-				width: 50px;
-				height: 50px;
-				border: 2px solid black;
 				background-color: transparent;
+				font-size: var(--text-size);
 			}
+			.node-list .content button::after,
+			.node-list .content button::before {
+				content: '';
+				position: absolute;
+				left: 0;
+				top: 50%;
+				width: 100%;
+				height: 0.5rem;
+				background-color: black;
+			}
+			.node-list .content button::after {
+				transform: rotate(45deg);
+			}
+			.node-list .content button::before {
+				transform: rotate(-45deg);
+			}
+
 			.node-list .content input {
-				width: 13rem;
+				width: 50%;
 			}
 			.node-list .content .node-weight {
 				width: 6rem;
 			}
 			.node-list .content .node-from {
 				width: 5rem;
-				font-size: 3rem;
+				font-size: var(--text-size);
 				border-radius: 2rem;
 				padding: 1rem;
 				background-color: white;
@@ -98,7 +123,7 @@
 				background-color: white;
 				border-radius: 2rem;
 				cursor: pointer;
-				font-size: 3rem;
+				font-size: var(--text-size);
 				padding: 1rem;
 				margin: 1rem;
 			}
