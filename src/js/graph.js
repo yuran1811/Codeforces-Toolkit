@@ -207,19 +207,31 @@ const drawNodeValue = (item) => {
 	c.closePath();
 };
 const drawEdgeWeight = (a, b) => {
-	let newList = a.listAdjTo.map((item) => item.item.value);
-	let idx = newList.indexOf(b.value);
-	let weight = a.listAdjTo[idx].weight;
+	const newList = a.listAdjTo.map((item) => item.item.value);
+	const idx = newList.indexOf(b.value);
+	const weight = a.listAdjTo[idx].weight;
 	if (!weight || weight == 0) return;
+
+	const radius = +nodeRadiusEl.value;
+	const angle = Math.atan2(b.y - a.y, b.x - a.x);
+	const unitVector = {
+		x: Math.cos(angle),
+		y: Math.sin(angle),
+	};
+	const normalVector = {
+		x: -unitVector.y,
+		y: unitVector.x,
+	};
+
+	const midPoint = {
+		x: (b.x + a.x) / 2 + coor.x,
+		y: (b.y + a.y) / 2 + coor.y,
+	};
 
 	c.beginPath();
 	c.font = '40px Trebuchet MS';
 	c.fillStyle = edgeValueColorEl.value;
-	c.fillText(
-		weight,
-		(a.x + b.x) / 2 + coor.x + 10,
-		(a.y + b.y) / 2 + coor.y + 10
-	);
+	c.fillText(weight, midPoint.x, midPoint.y);
 	c.closePath();
 };
 const drawNodeWeight = (item) => {
@@ -252,12 +264,8 @@ const update = () => {
 		trimAdjArray(item.listAdjTo);
 		item.listAdjTo.forEach((adjItem) => {
 			if (item.x === adjItem.item.x && item.y === adjItem.item.y) return;
-			if (
-				nodeList.map((node) => node.value).includes(adjItem.item.value)
-			) {
+			if (nodeList.map((node) => node.value).includes(adjItem.item.value))
 				drawLine(item, adjItem.item);
-				drawDir(item, adjItem.item);
-			}
 		});
 		c.save();
 	});
@@ -298,15 +306,26 @@ const addNode = (e, f) => {
 		let idx = 1;
 		while (nodeList.some((item) => item.value === idx)) idx++;
 
-		array[key].push({
-			x: f.clientX - coor.x,
-			y: f.clientY - coor.y,
-			weight: 0,
-			value: idx,
-			textNode: idx,
-			listAdjTo: [],
-		});
-		addNodeInfo(idx);
+		const newPos = {
+			a: f.clientX - coor.x,
+			b: f.clientY - coor.y,
+		};
+
+		const r = +nodeRadiusEl.value;
+		const checkFarAway = nodeList.every(
+			(item) => calcDist(newPos, item) >= 4 * r * r + 30
+		);
+		if (checkFarAway) {
+			array[key].push({
+				x: newPos.a,
+				y: newPos.b,
+				weight: 0,
+				value: idx,
+				textNode: idx,
+				listAdjTo: [],
+			});
+			addNodeInfo(idx);
+		}
 	}
 };
 let moveNode;
@@ -447,8 +466,20 @@ window.onmousedown = (f) => {
 			addEventListener(
 				'mousemove',
 				(moveNode = (e) => {
-					item.x = e.clientX - coor.x;
-					item.y = e.clientY - coor.y;
+					const newPos = {
+						a: e.clientX - coor.x,
+						b: e.clientY - coor.y,
+					};
+
+					const r = +nodeRadiusEl.value;
+					const checkFarAway = nodeList.every(
+						(item) => calcDist(newPos, item) >= 4 * r * r + 30
+					);
+					if (checkFarAway) {
+						item.x = newPos.a;
+						item.y = newPos.b;
+					}
+					update();
 				})
 			);
 			update();
