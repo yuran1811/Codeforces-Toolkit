@@ -148,17 +148,36 @@ const drawPoint = (item) => {
 	c.fill(newNode);
 };
 const drawDir = (a, b) => {
+	const radius = +nodeRadiusEl.value;
+	const angle = Math.atan2(b.y - a.y, b.x - a.x);
+
+	const unitVector = {
+		x: Math.cos(angle) * radius,
+		y: Math.sin(angle) * radius,
+	};
+	const normalVector = {
+		x: -unitVector.y,
+		y: unitVector.x,
+	};
+
+	const boundPoint = {
+		x: b.x - unitVector.x * 0.9 + coor.x,
+		y: b.y - unitVector.y * 0.9 + coor.y,
+	};
+	const leftPoint = {
+		x: boundPoint.x - unitVector.x + normalVector.x,
+		y: boundPoint.y - unitVector.y + normalVector.y,
+	};
+	const rightPoint = {
+		x: boundPoint.x - unitVector.x - normalVector.x,
+		y: boundPoint.y - unitVector.y - normalVector.y,
+	};
+
 	c.beginPath();
-	const d = +nodeRadiusEl.value;
-	const r = 10;
-	// const leftPiece = { x, y };
-	// const rightPiece = { x, y };
-	// c.moveTo(a.x + coor.x - r, a.y + coor.y + r);
-	// c.lineTo(leftPiece.x, leftPiece.y);
-	// c.lineTo(rightPiece.x, rightPiece.y);
-	const angle = atan2(b.x - a.x, b.y - a.y);
-	console.log(angle);
 	c.fillStyle = strokeColorEl.value;
+	c.moveTo(boundPoint.x, boundPoint.y, 20, 0, Math.PI * 2, false);
+	c.lineTo(leftPoint.x, leftPoint.y, 10, 0, Math.PI * 2, false);
+	c.lineTo(rightPoint.x, rightPoint.y, 10, 0, Math.PI * 2, false);
 	c.fill();
 	c.closePath();
 };
@@ -171,6 +190,7 @@ const drawLine = (a, b) => {
 	c.stroke();
 	c.closePath();
 
+	drawDir(a, b);
 	drawEdgeWeight(a, b);
 };
 const drawNodeValue = (item) => {
@@ -236,7 +256,7 @@ const update = () => {
 				nodeList.map((node) => node.value).includes(adjItem.item.value)
 			) {
 				drawLine(item, adjItem.item);
-				// drawDir(item, adjItem);
+				drawDir(item, adjItem.item);
 			}
 		});
 		c.save();
