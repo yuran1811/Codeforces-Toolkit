@@ -4,7 +4,7 @@
 			name: 'Node Radius',
 			input: 'number',
 			value: 25,
-			colorList: [
+			extraList: [
 				{
 					name: 'Node Color',
 					input: 'color',
@@ -21,7 +21,7 @@
 			name: 'Edge Width',
 			input: 'number',
 			value: 6,
-			colorList: [
+			extraList: [
 				{
 					name: 'Edge Color',
 					input: 'color',
@@ -34,13 +34,26 @@
 				},
 			],
 		},
+	];
+	const other_config = [
 		{
-			name: 'Background',
-			input: 'color',
-			value: '#000000',
-			colorList: [],
+			name: 'Extra',
+			extraList: [
+				{
+					name: 'Background',
+					input: 'color',
+					value: '#000000',
+				},
+				{
+					name: 'Show Direct',
+					input: 'checkbox',
+					value: '',
+				},
+			],
 		},
 	];
+
+	const cvert = (item) => item.name.toLowerCase().split(' ').join('-');
 
 	document.querySelector('.container').innerHTML = `
 		<div class="config">
@@ -49,23 +62,35 @@
 					(item) => `
 					<div>
 						<span class="label">${item.name}</span>
-						<input
-							class="${item.name.toLowerCase().split(' ').join('-')}"
-							type="${item.input}" value="${item.value}"
-						>
-							${item?.colorList
-								.map(
-									(color) =>
-										`<input class="${color.name
-											.toLowerCase()
-											.split(' ')
-											.join('-')}" type="${
-											color.input
-										}" value="${color.value}">`
-								)
-								.join('')}
+						<input class="${cvert(item)}" type="${item.input}" value="${item.value}">
+						${item?.extraList
+							.map((color) => {
+								return `<input
+											class="${cvert(color)}"
+											type="${color.input}"
+											value="${color.value}">`;
+							})
+							.join('')}
 					</div>`
 				)
+				.join('')}
+			${other_config
+				.map((config) => {
+					return `<div class="${config.name.toLowerCase()}">
+						${config?.extraList
+							.map((extra) => {
+								return `
+							<div class="extra-item">
+								<span class="label">${extra.name}</span>
+								<input
+										class="${cvert(extra)}"
+										type="${extra.input}"
+										value="${extra.value}">
+							</div>`;
+							})
+							.join('')}
+				</div>`;
+				})
 				.join('')}
 		</div>
 

@@ -7,6 +7,7 @@ const strokeColorEl = document.querySelector('.edge-color');
 const edgeValueColorEl = document.querySelector('.edge-value-color');
 const nodeListContent = document.querySelector('.node-list .content');
 const addNodeBtn = document.querySelector('.add-btn');
+const showDirect = document.querySelector('.show-direct');
 const canvas = document.querySelector('#app');
 const c = canvas.getContext('2d');
 
@@ -17,6 +18,8 @@ let keyDown = 0;
 let mouseDown = 0;
 let mouseMove = 0;
 let moveSpeed = 3;
+
+showDirect.checked = 1;
 
 // Function
 function nodeRemoveBtn(thisEle) {
@@ -147,9 +150,13 @@ const drawPoint = (item) => {
 	c.fillStyle = nodeColorEl.value;
 	c.fill(newNode);
 };
-const drawDir = (a, b) => {
+const drawDir = (a, b, { curve = 0, cp }) => {
+	if (!showDirect.checked) return;
+
 	const radius = +nodeRadiusEl.value;
-	const angle = Math.atan2(b.y - a.y, b.x - a.x);
+	const angle = curve
+		? Math.atan2(b.y - cp.y + coor.y, b.x - cp.x + coor.x)
+		: Math.atan2(b.y - a.y, b.x - a.x);
 
 	const unitVector = {
 		x: Math.cos(angle) * radius,
@@ -193,6 +200,36 @@ const drawLine = (a, b) => {
 	drawDir(a, b);
 	drawEdgeWeight(a, b);
 };
+const drawCurve = (a, b) => {
+	const angle = Math.atan2(b.y - a.y, b.x - a.x);
+	const unitVector = {
+		x: Math.cos(angle),
+		y: Math.sin(angle),
+	};
+	const normalVector = {
+		x: -unitVector.y,
+		y: unitVector.x,
+	};
+	const midPoint = {
+		x: (a.x + b.x) / 2,
+		y: (a.y + b.y) / 2,
+	};
+	const cp = {
+		x: midPoint.x - normalVector.x * 65 + coor.x,
+		y: midPoint.y - normalVector.y * 65 + coor.y,
+	};
+
+	c.beginPath();
+	c.moveTo(a.x + coor.x, a.y + coor.y);
+	c.bezierCurveTo(cp.x, cp.y, cp.x, cp.y, b.x + coor.x, b.y + coor.y);
+	c.strokeStyle = strokeColorEl.value;
+	c.lineWidth = strokeWidthEl.value;
+	c.stroke();
+	c.closePath();
+
+	drawDir(a, b, { curve: 1, cp });
+	drawEdgeWeight(a, b, { curve: 1, cp });
+};
 const drawNodeValue = (item) => {
 	const { x, y, textNode } = item;
 
@@ -206,32 +243,21 @@ const drawNodeValue = (item) => {
 	);
 	c.closePath();
 };
-const drawEdgeWeight = (a, b) => {
+const drawEdgeWeight = (a, b, { curve = 0, cp }) => {
 	const newList = a.listAdjTo.map((item) => item.item.value);
 	const idx = newList.indexOf(b.value);
 	const weight = a.listAdjTo[idx].weight;
 	if (!weight || weight == 0) return;
 
-	const radius = +nodeRadiusEl.value;
-	const angle = Math.atan2(b.y - a.y, b.x - a.x);
-	const unitVector = {
-		x: Math.cos(angle),
-		y: Math.sin(angle),
-	};
-	const normalVector = {
-		x: -unitVector.y,
-		y: unitVector.x,
-	};
-
-	const midPoint = {
-		x: (b.x + a.x) / 2 + coor.x,
-		y: (b.y + a.y) / 2 + coor.y,
+	const pos = {
+		x: curve ? cp.x : (b.x + a.x) / 2 + coor.x,
+		y: curve ? cp.y : (b.y + a.y) / 2 + coor.y,
 	};
 
 	c.beginPath();
 	c.font = '40px Trebuchet MS';
 	c.fillStyle = edgeValueColorEl.value;
-	c.fillText(weight, midPoint.x, midPoint.y);
+	c.fillText(weight, pos.x, pos.y);
 	c.closePath();
 };
 const drawNodeWeight = (item) => {
@@ -265,7 +291,8 @@ const update = () => {
 		item.listAdjTo.forEach((adjItem) => {
 			if (item.x === adjItem.item.x && item.y === adjItem.item.y) return;
 			if (nodeList.map((node) => node.value).includes(adjItem.item.value))
-				drawLine(item, adjItem.item);
+				drawCurve(item, adjItem.item);
+			// drawLine(item, adjItem.item);
 		});
 		c.save();
 	});
@@ -313,7 +340,7 @@ const addNode = (e, f) => {
 
 		const r = +nodeRadiusEl.value;
 		const checkFarAway = nodeList.every(
-			(item) => calcDist(newPos, item) >= 4 * r * r + 30
+			(item) => calcDist(newPos, item) >= 4 * r * r
 		);
 		if (checkFarAway) {
 			array[key].push({
@@ -442,6 +469,8 @@ const addHandle = () => {
 };
 addNodeBtn.onclick = addHandle;
 
+showDirect.oninput = () => update();
+
 window.onresize = () => {
 	canvas.width = innerWidth;
 	canvas.height = innerHeight;
@@ -473,7 +502,7 @@ window.onmousedown = (f) => {
 
 					const r = +nodeRadiusEl.value;
 					const checkFarAway = nodeList.every(
-						(item) => calcDist(newPos, item) >= 4 * r * r + 30
+						(item) => calcDist(newPos, item) >= 4 * r * r + 2 * r
 					);
 					if (checkFarAway) {
 						item.x = newPos.a;
