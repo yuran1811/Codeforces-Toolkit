@@ -150,6 +150,24 @@ const drawPoint = (item) => {
 	c.fillStyle = nodeColorEl.value;
 	c.fill(newNode);
 };
+const drawDirOwn = (a) => {
+	const r = +nodeRadiusEl.value;
+	c.beginPath();
+	c.arc(a.x + coor.x, a.y + coor.y - r, r, 0, Math.PI * 2, false);
+	c.lineWidth = +strokeWidthEl.value;
+	// c.strokeStyle = strokeColorEl.value;
+	c.strokeStyle = 'yellow';
+	c.stroke();
+	c.closePath();
+	c.save();
+	const cp = { x: a.x + coor.x, y: a.y + coor.y - r };
+
+	c.beginPath();
+	c.font = '40px Trebuchet MS';
+	c.fillStyle = edgeValueColorEl.value;
+	c.fillText(a.weight, cp.x, cp.y);
+	c.closePath();
+};
 const drawDir = (a, b, { curve = 0, cp }) => {
 	if (!showDirect.checked) return;
 
@@ -172,12 +190,12 @@ const drawDir = (a, b, { curve = 0, cp }) => {
 		y: b.y - unitVector.y * 0.9 + coor.y,
 	};
 	const leftPoint = {
-		x: boundPoint.x - unitVector.x + normalVector.x,
-		y: boundPoint.y - unitVector.y + normalVector.y,
+		x: boundPoint.x - unitVector.x * 0.8 + normalVector.x * 0.7,
+		y: boundPoint.y - unitVector.y * 0.8 + normalVector.y * 0.7,
 	};
 	const rightPoint = {
-		x: boundPoint.x - unitVector.x - normalVector.x,
-		y: boundPoint.y - unitVector.y - normalVector.y,
+		x: boundPoint.x - unitVector.x * 0.8 - normalVector.x * 0.7,
+		y: boundPoint.y - unitVector.y * 0.8 - normalVector.y * 0.7,
 	};
 
 	c.beginPath();
@@ -197,8 +215,8 @@ const drawLine = (a, b) => {
 	c.stroke();
 	c.closePath();
 
-	drawDir(a, b);
-	drawEdgeWeight(a, b);
+	drawDir(a, b, { curve: 0 });
+	drawEdgeWeight(a, b, { curve: 0 });
 };
 const drawCurve = (a, b) => {
 	const angle = Math.atan2(b.y - a.y, b.x - a.x);
@@ -288,11 +306,18 @@ const update = () => {
 	trimArray(nodeList);
 	nodeList.forEach((item) => {
 		trimAdjArray(item.listAdjTo);
-		item.listAdjTo.forEach((adjItem) => {
-			if (item.x === adjItem.item.x && item.y === adjItem.item.y) return;
-			if (nodeList.map((node) => node.value).includes(adjItem.item.value))
-				drawCurve(item, adjItem.item);
-			// drawLine(item, adjItem.item);
+		item.listAdjTo.forEach((adj) => {
+			if (item.x === adj.item.x && item.y === adj.item.y) {
+				drawDirOwn(item);
+			} else if (nodeList.map((x) => x.value).includes(adj.item.value)) {
+				if (
+					adj.item.listAdjTo
+						.map((x) => x.item.value)
+						.includes(item.value)
+				)
+					drawCurve(item, adj.item);
+				else drawLine(item, adj.item);
+			}
 		});
 		c.save();
 	});
@@ -410,11 +435,9 @@ const tool = {
 				`.node-info[data-value="${root.value}"]`
 			);
 
-			strokeList.forEach(
-				(item) =>
-					item.value !== root.value &&
-					root.listAdjTo.push({ item: item, weight: 0 })
-			);
+			strokeList.forEach((item) => {
+				root.listAdjTo.push({ item: item, weight: 0 });
+			});
 			strokeList.length = 0;
 			update();
 
