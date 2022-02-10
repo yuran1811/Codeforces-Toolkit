@@ -542,6 +542,9 @@ addEventListener('keydown', (e) => {
 
 	const container = document.querySelector('.container');
 	if (key === 'p') container.classList.toggle('active');
+
+	const helpModal = document.querySelector('.help-modal');
+	if (key === 'h') helpModal.classList.toggle('active');
 });
 
 update();

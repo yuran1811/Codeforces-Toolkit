@@ -145,10 +145,92 @@
 				width: 2rem;
 				height: 2rem;
 			}
+
+			.help-hint {
+				position: fixed;
+				top: 0;
+				left: 0;
+				z-index: 10;
+				padding: 2rem;
+				color: white;
+				font-size: var(--text-size);
+				animation: hide 1s 5s ease 1 forwards;
+			}
+			@keyframes hide {
+				from {
+					opacity: 1;
+				}
+				to {
+					opacity: 0;
+				}
+			}
+
+			.help-modal {
+				inset: 0;
+				z-index: 20;
+				display: none;
+				position: fixed;
+				padding: 3rem;
+				background-color: rgba(0, 0, 0, 0.6);
+			}
+			.help-modal.active {
+				display: block;
+			}
+			.help-container {
+				width: 100%;
+				padding: 1rem 5rem;
+			}
+			.help-modal .help-title {
+				position: relative;
+				text-align: center;
+				font-size: 5rem;
+				color: white;
+				padding: 1rem;
+				margin: 1rem;
+			}
+
+			.help-modal .help-item {
+				border-radius: 1rem;
+				margin: 1rem 0;
+				width: 100%;
+				display: flex;
+				align-items: center;
+				justify-content: start;
+				border: 0.2rem solid white;
+				background-color: transparent;
+				transition: all 0.4s ease;
+			}
+			.help-modal .help-item:hover {
+				background-color: white;
+			}
+			.help-modal .help-item:hover .help-label,
+			.help-modal .help-item:hover .help-content p {
+				color: black;
+			}
+
+			.help-modal .help-label {
+				font-weight: bold;
+				font-size: 2.6rem;
+				color: white;
+				margin: 1rem;
+				width: 35rem;
+			}
+			.help-modal .help-content {
+				padding: 1rem 0;
+				width: 100%;
+				z-index: 21;
+			}
+			.help-modal .help-content p {
+				font-size: var(--text-size);
+				padding: 1rem 0;
+				color: white;
+			}
 		</style>
 		<title>Graph Editor</title>
 	</head>
 	<body>
+		<div class="help-hint">Type 'H' for helps</div>
+		<div class="help-modal"></div>
 		<div class="container"></div>
 		<canvas id="app"></canvas>
 		<script src="./src/js/renderGraph.js"></script>

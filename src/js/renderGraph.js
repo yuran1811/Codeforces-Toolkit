@@ -99,3 +99,56 @@
 			<div class="add-btn">Add node</div>
 		</div>`;
 })();
+
+(() => {
+	const helpContent = [
+		{
+			label: 'Open Config Panel',
+			content: ['Type "P" to show the config panel'],
+		},
+		{
+			label: 'Add new node',
+			content: [
+				'Click the "Add Node" button or "Click and Hold + Shift"',
+			],
+		},
+		{
+			label: 'Remove a node',
+			content: ['Click the "X" button or "Click and Hold + D"'],
+		},
+		{
+			label: 'Add node weight',
+			content: ['Edit the second input field'],
+		},
+		{
+			label: 'Add edge between two nodes',
+			content: [
+				'Edit the third input field like "2, 3, 4" to add adjacent node of the current node',
+				'Edit the third input field like "2:6, 3:4" or "2:6/4, 3:4/4" to add weight of edges (default is 0)',
+				'Or "Click and Hold + S" on the first node, then do the same for the second one',
+			],
+		},
+	];
+
+	const helpModal = document.querySelector('.help-modal');
+	helpModal.innerHTML = `
+		<span class="help-title">Help</span>
+		<div class="help-container">
+			${helpContent
+				.map((help) => {
+					return `
+					<div class="help-item">
+						<span class="help-label">${help.label}</span>
+						<div class="help-content">${help.content
+							.map(
+								(item) => `
+							<p>${item}</p>`
+							)
+							.join('')}
+						</div>
+					</div>`;
+				})
+				.join('')}
+		</div>
+	`;
+})();
