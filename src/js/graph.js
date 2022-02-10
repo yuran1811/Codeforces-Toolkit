@@ -160,8 +160,9 @@ const drawDirOwn = (a) => {
 	c.stroke();
 	c.closePath();
 	c.save();
-	const cp = { x: a.x + coor.x, y: a.y + coor.y - r };
+	const cp = { x: a.x + coor.x - 10, y: a.y + coor.y - 60 };
 
+	if (!a.weight) return;
 	c.beginPath();
 	c.font = '40px Trebuchet MS';
 	c.fillStyle = edgeValueColorEl.value;
