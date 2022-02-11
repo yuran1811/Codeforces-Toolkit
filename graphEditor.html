@@ -9,6 +9,7 @@
 			:root {
 				--text-size: 2rem;
 			}
+
 			* {
 				font-family: 'Trebuchet MS', sans-serif;
 				box-sizing: border-box;
@@ -17,6 +18,10 @@
 				padding: 0;
 				margin: 0;
 			}
+			*::-webkit-scrollbar {
+				width: 0;
+			}
+
 			body {
 				overflow: hidden;
 			}
@@ -33,7 +38,7 @@
 				align-items: center;
 				flex-direction: column;
 				justify-content: center;
-				background-color: lightblue;
+				background-color: rgb(194, 232, 245);
 			}
 			.container.active {
 				display: flex;
@@ -179,6 +184,8 @@
 			.help-container {
 				width: 100%;
 				padding: 1rem 5rem;
+				height: calc(100vh - 10rem);
+				overflow: hidden auto;
 			}
 			.help-modal .help-title {
 				position: relative;

@@ -10,3 +10,13 @@
 -   Search problemset follow options
 -   Bookmark the problems
 -   See current or upcoming + finished contests
+
+## Graph Editor (integrated in CF Toolkit)
+
+### What you can do
+
+-   Add new node and nodes' weight
+-   Add edge of two nodes and edges' weight (even edge of one node and its own)
+-   Infinite space
+-   Customize the node radius, edge width, nodes' color, node weight's color, edges' color, edge weight's color and background color
+-   Show / Hide the direct of edges

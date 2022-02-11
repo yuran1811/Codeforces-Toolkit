@@ -103,7 +103,15 @@
 (() => {
 	const helpContent = [
 		{
-			label: 'Open Config Panel',
+			label: 'Space moving',
+			content: ['Just move your mouse'],
+		},
+		{
+			label: 'Space moving speed',
+			content: ['Type "X" to increase the moving speed'],
+		},
+		{
+			label: 'Open Config panel',
 			content: ['Type "P" to show the config panel'],
 		},
 		{

@@ -469,8 +469,8 @@ const mouse = {
 // Add Event
 const addHandle = () => {
 	let nowNode = {
-		a: Math.random() * innerWidth + coor.x,
-		b: Math.random() * innerHeight + coor.y,
+		a: Math.random() * innerWidth - coor.x,
+		b: Math.random() * innerHeight - coor.y,
 	};
 	let r = nodeRadiusEl.value;
 	while (
