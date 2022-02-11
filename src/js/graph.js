@@ -153,20 +153,22 @@ const drawPoint = (item) => {
 const drawDirOwn = (a) => {
 	const r = +nodeRadiusEl.value;
 	c.beginPath();
-	c.arc(a.x + coor.x, a.y + coor.y - r, r, 0, Math.PI * 2, false);
+	c.arc(a.x + coor.x, a.y + coor.y - r * 1.3, r * 1.3, 0, Math.PI * 2, false);
 	c.lineWidth = +strokeWidthEl.value;
-	// c.strokeStyle = strokeColorEl.value;
 	c.strokeStyle = 'yellow';
 	c.stroke();
 	c.closePath();
 	c.save();
-	const cp = { x: a.x + coor.x - 10, y: a.y + coor.y - 60 };
+	const cp = { x: a.x + coor.x - 10, y: a.y + coor.y - 70 };
 
-	if (!a.weight) return;
+	const newList = a.listAdjTo.map((item) => item.item.value);
+	const idx = newList.indexOf(a.value);
+	const weight = a.listAdjTo[idx].weight;
+	if (!weight || weight == 0) return;
 	c.beginPath();
 	c.font = '40px Trebuchet MS';
 	c.fillStyle = edgeValueColorEl.value;
-	c.fillText(a.weight, cp.x, cp.y);
+	c.fillText(weight, cp.x, cp.y);
 	c.closePath();
 };
 const drawDir = (a, b, { curve = 0, cp }) => {
@@ -526,7 +528,9 @@ window.onmousedown = (f) => {
 
 					const r = +nodeRadiusEl.value;
 					const checkFarAway = nodeList.every(
-						(item) => calcDist(newPos, item) >= 4 * r * r + 2 * r
+						(item) =>
+							e.target !== item &&
+							calcDist(newPos, item) >= 4 * r * r + 2 * r
 					);
 					if (checkFarAway) {
 						item.x = newPos.a;
