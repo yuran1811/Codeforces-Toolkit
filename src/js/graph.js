@@ -17,7 +17,7 @@ canvas.height = innerHeight;
 let keyDown = 0;
 let mouseDown = 0;
 let mouseMove = 0;
-let moveSpeed = 3;
+let moveSpeed = 5;
 
 showDirect.checked = 1;
 
@@ -450,7 +450,7 @@ const tool = {
 					.join(',');
 		},
 		x: () => {
-			moveSpeed = moveSpeed === 14 ? 4 : 14;
+			moveSpeed = moveSpeed === 14 ? 5 : 14;
 		},
 	},
 };
@@ -503,6 +503,7 @@ window.onresize = () => {
 	update();
 };
 
+let animationID;
 window.onmousedown = (f) => {
 	mouseDown = 1;
 	mouse.x = f.clientX;
@@ -527,11 +528,11 @@ window.onmousedown = (f) => {
 					};
 
 					const r = +nodeRadiusEl.value;
-					const checkFarAway = nodeList.every(
-						(item) =>
-							e.target !== item &&
-							calcDist(newPos, item) >= 4 * r * r + 2 * r
-					);
+					const checkFarAway = nodeList.every((node) => {
+						if (item !== node)
+							return calcDist(newPos, node) >= 4 * r * r + 2 * r;
+						return true;
+					});
 					if (checkFarAway) {
 						item.x = newPos.a;
 						item.y = newPos.b;
@@ -539,7 +540,6 @@ window.onmousedown = (f) => {
 					update();
 				})
 			);
-			update();
 		}
 	});
 
@@ -573,6 +573,11 @@ addEventListener('keydown', (e) => {
 
 	const helpModal = document.querySelector('.help-modal');
 	if (key === 'h') helpModal.classList.toggle('active');
+
+	if (key === 'escape') {
+		container.classList.remove('active');
+		helpModal.classList.remove('active');
+	}
 });
 
 update();
