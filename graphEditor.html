@@ -5,6 +5,7 @@
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" href="./src/img/graph.png" />
+		<!-- Main -->
 		<style>
 			:root {
 				--text-size: 2rem;
@@ -25,7 +26,9 @@
 			body {
 				overflow: hidden;
 			}
-
+		</style>
+		<!-- Container -->
+		<style>
 			.container {
 				position: fixed;
 				top: 2rem;
@@ -66,7 +69,9 @@
 				width: 5rem;
 				height: 5rem;
 			}
-
+		</style>
+		<!-- Node List -->
+		<style>
 			.node-list {
 				position: relative;
 				padding: 1rem;
@@ -132,7 +137,9 @@
 				padding: 1rem;
 				margin: 1rem;
 			}
-
+		</style>
+		<!-- Extra -->
+		<style>
 			.extra-item {
 				display: flex;
 				align-items: center;
@@ -233,11 +240,38 @@
 				color: white;
 			}
 		</style>
+		<!-- Input Group -->
+		<style>
+			.input-group {
+				font-size: 2rem;
+				position: fixed;
+				left: 2rem;
+				top: 2rem;
+
+				min-width: 10rem;
+				width: 12rem;
+				max-width: max(50vw, 30rem);
+
+				max-height: 100vh;
+				height: 50vh;
+				min-height: 20rem;
+
+				display: none;
+				padding: 2rem;
+				border: none;
+				outline: 0;
+				z-index: 100;
+			}
+			.input-group.active {
+				display: block;
+			}
+		</style>
 		<title>Graph Editor</title>
 	</head>
 	<body>
 		<div class="help-hint">Type 'H' for helps</div>
 		<div class="help-modal"></div>
+		<textarea class="input-group"></textarea>
 		<div class="container"></div>
 		<canvas id="app"></canvas>
 		<script src="./src/js/renderGraph.js"></script>

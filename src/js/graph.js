@@ -8,6 +8,7 @@ const edgeValueColorEl = document.querySelector('.edge-value-color');
 const nodeListContent = document.querySelector('.node-list .content');
 const addNodeBtn = document.querySelector('.add-btn');
 const showDirect = document.querySelector('.show-direct');
+const inpGr = document.querySelector('.input-group');
 const canvas = document.querySelector('#app');
 const c = canvas.getContext('2d');
 
@@ -114,6 +115,10 @@ const addNodeInfo = (id) => {
 	update();
 };
 
+const getRandPos = () => ({
+	a: Math.random() * (innerWidth - 400) + coor.x,
+	b: Math.random() * (innerHeight - 400) + coor.y,
+});
 const calcDist = ({ a, b }, { x, y }) => (a - x) ** 2 + (b - y) ** 2;
 const trimArray = (list) => {
 	if (list.length < 2) return;
@@ -158,7 +163,6 @@ const drawDirOwn = (a) => {
 	c.strokeStyle = 'yellow';
 	c.stroke();
 	c.closePath();
-	c.save();
 	const cp = { x: a.x + coor.x - 10, y: a.y + coor.y - 70 };
 
 	const newList = a.listAdjTo.map((item) => item.item.value);
@@ -303,6 +307,7 @@ const drawNodeWeight = (item) => {
 	c.closePath();
 };
 const update = () => {
+	c.restore();
 	c.fillStyle = backgroundEl.value;
 	c.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -322,15 +327,14 @@ const update = () => {
 				else drawLine(item, adj.item);
 			}
 		});
-		c.save();
 	});
 	nodeList.forEach((item) => {
 		drawPoint(item);
 		drawNodeValue(item);
 		drawNodeWeight(item);
-		c.save();
 	});
 
+	c.save();
 	// localStorage.setItem('nodeList', JSON.stringify(nodeList));
 };
 
@@ -467,19 +471,42 @@ const mouse = {
 };
 
 // Add Event
-const addHandle = () => {
-	let nowNode = {
-		a: Math.random() * innerWidth - coor.x,
-		b: Math.random() * innerHeight - coor.y,
-	};
+const inpAddNode = (nodeValue) => {
+	const nodeInList = nodeList.find((item) => item.value === nodeValue);
+	if (nodeInList)
+		return {
+			unique: 0,
+			node: nodeInList,
+		};
+
+	let nowNode = getRandPos();
 	let r = nodeRadiusEl.value;
 	while (
 		nodeList.length &&
 		!nodeList.every((item) => calcDist(nowNode, item) > 4 * r * r)
-	) {
-		nowNode.a = Math.random() * (innerWidth - 300) - coor.x;
-		nowNode.b = Math.random() * (innerHeight - 300) - coor.y;
-	}
+	)
+		nowNode = getRandPos();
+
+	return {
+		unique: 1,
+		node: {
+			x: nowNode.a,
+			y: nowNode.b,
+			weight: 0,
+			listAdjTo: [],
+			value: nodeValue,
+			textNode: nodeValue,
+		},
+	};
+};
+const addHandle = () => {
+	let nowNode = getRandPos();
+	let r = nodeRadiusEl.value;
+	while (
+		nodeList.length &&
+		!nodeList.every((item) => calcDist(nowNode, item) > 4 * r * r)
+	)
+		nowNode = getRandPos();
 
 	let idx = 1;
 	while (nodeList.some((item) => item.value === idx)) idx++;
@@ -574,10 +601,44 @@ addEventListener('keydown', (e) => {
 	const helpModal = document.querySelector('.help-modal');
 	if (key === 'h') helpModal.classList.toggle('active');
 
+	if (key === 'i') inpGr.classList.toggle('active');
+
 	if (key === 'escape') {
 		container.classList.remove('active');
 		helpModal.classList.remove('active');
+		inpGr.classList.remove('active');
 	}
 });
+
+inpGr.onmousemove = (e) => e.stopPropagation();
+inpGr.oninput = (e) => {
+	nodeList.length = 0;
+	const lines = e.target.value.trim().split('\n');
+	lines.forEach((line) => {
+		const directEdge = !showDirect.checked;
+		const arr = line
+			.trim()
+			.split(' ')
+			.map((item) => +item);
+		const from = inpAddNode(arr[0]);
+		from.unique && nodeList.push(from.node);
+
+		if (arr.length === 2) {
+			const to = inpAddNode(arr[1]);
+			to.unique && nodeList.push(to.node);
+			from.node.listAdjTo.push({ item: to.node, weight: 0 });
+			directEdge &&
+				to.node.listAdjTo.push({ item: from.node, weight: 0 });
+		}
+		if (arr.length === 3) {
+			const to = inpAddNode(arr[1]);
+			to.unique && nodeList.push(to.node);
+			from.node.listAdjTo.push({ item: to.node, weight: arr[2] });
+			directEdge &&
+				to.node.listAdjTo.push({ item: from.node, weight: arr[2] });
+		}
+	});
+	update();
+};
 
 update();
