@@ -108,11 +108,15 @@
 		},
 		{
 			label: 'Space moving speed',
-			content: ['Type "X" to increase the moving speed'],
+			content: ['Type "x" to increase the moving speed'],
 		},
 		{
 			label: 'Open Config panel',
-			content: ['Type "P" to show the config panel'],
+			content: ['Type "p" to show the config panel'],
+		},
+		{
+			label: 'Open Input Field',
+			content: ['Type "i" to show the config panel'],
 		},
 		{
 			label: 'Add new node',

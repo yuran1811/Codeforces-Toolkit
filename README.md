@@ -20,3 +20,4 @@
 -   Infinite space
 -   Customize the node radius, edge width, nodes' color, node weight's color, edges' color, edge weight's color and background color
 -   Show / Hide the direct of edges
+-   Draw the graph based on the test input
