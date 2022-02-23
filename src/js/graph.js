@@ -163,12 +163,14 @@ const drawDirOwn = (a) => {
 	c.strokeStyle = 'yellow';
 	c.stroke();
 	c.closePath();
+
 	const cp = { x: a.x + coor.x - 10, y: a.y + coor.y - 70 };
 
 	const newList = a.listAdjTo.map((item) => item.item.value);
 	const idx = newList.indexOf(a.value);
 	const weight = a.listAdjTo[idx].weight;
-	if (!weight || weight == 0) return;
+	if (!weight) return;
+
 	c.beginPath();
 	c.font = '40px Trebuchet MS';
 	c.fillStyle = edgeValueColorEl.value;
@@ -409,11 +411,9 @@ const tool = {
 							.indexOf(item.value);
 						if (idOf > -1) node.listAdjTo.splice(idOf, 1);
 
-						document
-							.querySelector(
-								`.node-info[data-value="${node.value}"]`
-							)
-							.querySelector('.node-to').value = node.listAdjTo
+						document.querySelector(
+							`.node-info[data-value="${node.value}"] .node-to`
+						).value = node.listAdjTo
 							.map((adj) => `${adj.item.value}:${adj.weight}`)
 							.join(',');
 					});
@@ -442,9 +442,9 @@ const tool = {
 				`.node-info[data-value="${root.value}"]`
 			);
 
-			strokeList.forEach((item) => {
-				root.listAdjTo.push({ item: item, weight: 0 });
-			});
+			strokeList.forEach((item) =>
+				root.listAdjTo.push({ item: item, weight: 0 })
+			);
 			strokeList.length = 0;
 			update();
 
@@ -630,12 +630,12 @@ inpGr.oninput = (e) => {
 			directEdge &&
 				to.node.listAdjTo.push({ item: from.node, weight: 0 });
 		}
-		if (arr.length === 3) {
+		if (arr.length > 2) {
 			const to = inpAddNode(arr[1]);
 			to.unique && nodeList.push(to.node);
-			from.node.listAdjTo.push({ item: to.node, weight: arr[2] });
-			directEdge &&
-				to.node.listAdjTo.push({ item: from.node, weight: arr[2] });
+			const weight = arr.slice(2).join('/');
+			from.node.listAdjTo.push({ item: to.node, weight });
+			directEdge && to.node.listAdjTo.push({ item: from.node, weight });
 		}
 	});
 	update();
