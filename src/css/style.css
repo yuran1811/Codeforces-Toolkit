@@ -38,6 +38,6 @@ output {
 	border-radius: 2rem;
 	border-color: var(--borderColor);
 	background-color: var(--color);
-	color: black;
+    color: var(--background);
 	outline: none;
 }
