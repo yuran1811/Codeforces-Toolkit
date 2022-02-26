@@ -14,15 +14,14 @@ const c = canvas.getContext('2d');
 
 canvas.width = innerWidth;
 canvas.height = innerHeight;
+showDirect.checked = 1;
 
 let keyDown = 0;
 let mouseDown = 0;
 let mouseMove = 0;
 let moveSpeed = 5;
 
-showDirect.checked = 1;
-
-// Function
+// Node Ele Func
 function nodeRemoveBtn(thisEle) {
 	const infoEl = thisEle.closest('.node-info');
 	nodeList.forEach((item, index) => {
@@ -115,32 +114,24 @@ const addNodeInfo = (id) => {
 	update();
 };
 
-const getRandPos = () => ({
-	a: Math.random() * (innerWidth - 400) + coor.x,
-	b: Math.random() * (innerHeight - 400) + coor.y,
+// Utilities Func
+const getRandPos = (r = +nodeRadiusEl.value) => ({
+	a: Math.random() * (innerWidth + coor.x - 4 * r) + 2 * r,
+	b: Math.random() * (innerHeight + coor.y - 2 * r) + r,
 });
 const calcDist = ({ a, b }, { x, y }) => (a - x) ** 2 + (b - y) ** 2;
 const trimArray = (list) => {
 	if (list.length < 2) return;
-	list.sort((a, b) => {
-		if (a.x < b.x) return -1;
-		if (a.x > b.x) return 1;
-		return a.y - b.y;
-	});
 	for (let i = 1; i < list.length; i++)
 		if (list[i].value === list[i - 1].value) list.splice(i, 1);
 };
 const trimAdjArray = (list) => {
 	if (list.length < 2) return;
-	list.sort((a, b) => {
-		if (a.x < b.x) return -1;
-		if (a.x > b.x) return 1;
-		return a.y - b.y;
-	});
 	for (let i = 1; i < list.length; i++)
 		if (list[i].item.value === list[i - 1].item.value) list.splice(i, 1);
 };
 
+// Draw Func
 const drawPoint = (item) => {
 	const newNode = new Path2D();
 	const { x, y } = item;
@@ -323,7 +314,8 @@ const update = () => {
 				if (
 					adj.item.listAdjTo
 						.map((x) => x.item.value)
-						.includes(item.value)
+						.includes(item.value) &&
+					showDirect.checked
 				)
 					drawCurve(item, adj.item);
 				else drawLine(item, adj.item);
@@ -340,6 +332,7 @@ const update = () => {
 	// localStorage.setItem('nodeList', JSON.stringify(nodeList));
 };
 
+// Feature Func
 const checkInside = ({ a, b }, { x, y }, r = +nodeRadiusEl.value) =>
 	calcDist({ a, b }, { x, y }) < r * r;
 const moveSpace = (e) => {
@@ -470,7 +463,7 @@ const mouse = {
 	y: undefined,
 };
 
-// Add Event
+// Event Handles
 const inpAddNode = (nodeValue) => {
 	const nodeInList = nodeList.find((item) => item.value === nodeValue);
 	if (nodeInList)
@@ -590,7 +583,6 @@ addEventListener('mouseup', () => {
 	!mouseMove && update();
 	mouseMove = 0;
 });
-
 addEventListener('keydown', (e) => {
 	const key = e.key.toLowerCase();
 	if (key === 'x') tool.run[key]();
@@ -615,6 +607,7 @@ inpGr.oninput = (e) => {
 	nodeList.length = 0;
 	const lines = e.target.value.trim().split('\n');
 	lines.forEach((line) => {
+		if (!line[0]) return;
 		const directEdge = !showDirect.checked;
 		const arr = line
 			.trim()
