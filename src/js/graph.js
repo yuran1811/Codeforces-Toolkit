@@ -1,3 +1,5 @@
+'use strict';
+
 const backgroundEl = document.querySelector('.background');
 const nodeRadiusEl = document.querySelector('.node-radius');
 const nodeColorEl = document.querySelector('.node-color');
@@ -7,6 +9,7 @@ const strokeColorEl = document.querySelector('.edge-color');
 const edgeValueColorEl = document.querySelector('.edge-value-color');
 const nodeListContent = document.querySelector('.node-list .content');
 const addNodeBtn = document.querySelector('.add-btn');
+const copyDataBtn = document.querySelector('.copy-btn');
 const showDirect = document.querySelector('.show-direct');
 const inpGr = document.querySelector('.input-group');
 const canvas = document.querySelector('#app');
@@ -36,11 +39,13 @@ function nodeRemoveBtn(thisEle) {
 					.indexOf(item.value);
 				if (idOf > -1) node.listAdjTo.splice(idOf, 1);
 
-				document
+				const nodeToInp = document
 					.querySelector(`.node-info[data-value="${node.value}"]`)
-					.querySelector('.node-to').value = node.listAdjTo
-					.map((adj) => `${adj.item.value}:${adj.weight}`)
-					.join(',');
+					?.querySelector('.node-to');
+				if (nodeToInp)
+					nodeToInp.value = node.listAdjTo
+						.map((adj) => `${adj.item.value}:${adj.weight}`)
+						.join(',');
 			});
 		}
 	});
@@ -117,7 +122,7 @@ const addNodeInfo = (id) => {
 // Utilities Func
 const getRandPos = (r = +nodeRadiusEl.value) => ({
 	a: Math.random() * (innerWidth + coor.x - 4 * r) + 2 * r,
-	b: Math.random() * (innerHeight + coor.y - 2 * r) + r,
+	b: Math.random() * (innerHeight + coor.y - 4 * r) + 2 * r,
 });
 const calcDist = ({ a, b }, { x, y }) => (a - x) ** 2 + (b - y) ** 2;
 const trimArray = (list) => {
@@ -602,8 +607,38 @@ addEventListener('keydown', (e) => {
 	}
 });
 
+copyDataBtn.onclick = () => {
+	const getData = () =>
+		nodeList
+			.map((node) => {
+				const adjOfOthers = nodeList.some((item) =>
+					item.listAdjTo.map((x) => x.item.value).includes(node.value)
+				);
+				const adjData = node.listAdjTo
+					.map(
+						(adj) =>
+							`${node.value} ${adj.item.value}${
+								adj.weight
+									? ' ' + adj.weight.split('/').join(' ')
+									: ''
+							}\n`
+					)
+					.join('');
+				const adjOwnData = !adjData && !adjOfOthers ? node.value : '';
+				return adjData + adjOwnData;
+			})
+			.join('')
+			.trim();
+	const nodeListData = getData();
+	inpGr.value = nodeListData;
+	navigator.clipboard.writeText(nodeListData);
+	copyDataBtn.classList.add('btn--success');
+	setTimeout(() => copyDataBtn.classList.remove('btn--success'), 800);
+};
+
 inpGr.onmousemove = (e) => e.stopPropagation();
 inpGr.oninput = (e) => {
+	nodeListContent.innerHTML = '';
 	nodeList.length = 0;
 	const lines = e.target.value.trim().split('\n');
 	lines.forEach((line) => {

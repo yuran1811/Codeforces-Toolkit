@@ -128,7 +128,10 @@
 				padding: 1rem;
 				background-color: white;
 			}
-			.node-list .add-btn {
+			.node-list .btn-container {
+				display: flex;
+			}
+			.node-list .list__btn {
 				border: 2px solid transparent;
 				background-color: white;
 				border-radius: 2rem;
@@ -136,6 +139,11 @@
 				font-size: var(--text-size);
 				padding: 1rem;
 				margin: 1rem;
+				transition: all 0.2s ease;
+			}
+			.node-list .btn--success {
+				background-color: lightgreen;
+				color: rgb(10, 68, 41);
 			}
 		</style>
 		<!-- Extra -->
@@ -198,11 +206,11 @@
 			}
 			.help-modal .help-title {
 				position: relative;
-				text-align: center;
+				text-indent: 1.5rem;
+				text-align: left;
 				font-size: 5rem;
-				color: white;
 				padding: 1rem;
-				margin: 1rem;
+				color: white;
 			}
 
 			.help-modal .help-item {
@@ -267,6 +275,26 @@
 				background-color: rgba(255, 255, 255, 0.9);
 			}
 			.input-group.active {
+				display: block;
+			}
+		</style>
+		<!-- Tooltip -->
+		<style>
+			.tooltip {
+				position: relative;
+			}
+			.tooltip::after {
+				content: attr(data-ctx);
+				text-align: center;
+				position: absolute;
+				width: 10rem;
+				padding: 0.7rem;
+				border-radius: 1rem;
+				z-index: 8;
+				display: none;
+				background-color: aquamarine;
+			}
+			.tooltip:hover::after {
 				display: block;
 			}
 		</style>

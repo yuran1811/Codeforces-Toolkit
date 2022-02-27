@@ -9,11 +9,13 @@
 					name: 'Node Color',
 					input: 'color',
 					value: '#6ad468',
+					tooltip: 1,
 				},
 				{
 					name: 'Node Value Color',
 					input: 'color',
 					value: '#ffffff',
+					tooltip: 1,
 				},
 			],
 		},
@@ -26,11 +28,13 @@
 					name: 'Edge Color',
 					input: 'color',
 					value: '#ce5050',
+					tooltip: 1,
 				},
 				{
 					name: 'Edge Value Color',
 					input: 'color',
 					value: '#ffffff',
+					tooltip: 1,
 				},
 			],
 		},
@@ -43,11 +47,13 @@
 					name: 'Background',
 					input: 'color',
 					value: '#000000',
+					tooltip: 0,
 				},
 				{
 					name: 'Show Direct',
 					input: 'checkbox',
 					value: '',
+					tooltip: 0,
 				},
 			],
 		},
@@ -62,13 +68,17 @@
 					(item) => `
 					<div>
 						<span class="label">${item.name}</span>
-						<input class="${cvert(item)}" type="${item.input}" value="${item.value}">
+						<input
+							class="${cvert(item)}" type="${item.input}"
+							value="${item.value}">
 						${item?.extraList
 							.map((color) => {
 								return `<input
-											class="${cvert(color)}"
+											class="${cvert(color)} ${color.tooltip ? 'tooltip' : ''}"
 											type="${color.input}"
-											value="${color.value}">`;
+											value="${color.value}"
+											${color.tooltip ? `data-ctx="${color.name}"` : ''}
+											>`;
 							})
 							.join('')}
 					</div>`
@@ -83,9 +93,10 @@
 							<div class="extra-item">
 								<span class="label">${extra.name}</span>
 								<input
-										class="${cvert(extra)}"
+										class="${cvert(extra)} ${extra.tooltip ? 'tooltip' : ''}"
 										type="${extra.input}"
-										value="${extra.value}">
+										value="${extra.value}"
+										${extra.tooltip ? `data-ctx="${extra.name}"` : ''}>
 							</div>`;
 							})
 							.join('')}
@@ -96,7 +107,10 @@
 
 		<div class="node-list">
 			<div class="content"></div>
-			<div class="add-btn">Add node</div>
+			<div class="btn-container">
+				<div class="list__btn add-btn">Add node</div>
+				<div class="list__btn copy-btn">Copy Data</div>
+			</div>
 		</div>`;
 })();
 
@@ -144,7 +158,7 @@
 
 	const helpModal = document.querySelector('.help-modal');
 	helpModal.innerHTML = `
-		<span class="help-title">Help</span>
+		<div class="help-title">Help</div>
 		<div class="help-container">
 			${helpContent
 				.map((help) => {
@@ -164,3 +178,8 @@
 		</div>
 	`;
 })();
+
+setTimeout(
+	() => (document.querySelector('.help-hint').style.display = 'none'),
+	6000
+);
