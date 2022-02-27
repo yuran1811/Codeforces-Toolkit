@@ -23,6 +23,16 @@ body[data-theme='dark'] {
 	--btn-bg: rgb(204, 204, 204);
 }
 
+.tools-title {
+	position: fixed;
+	top: 0;
+	left: 0;
+	border: none;
+	height: 6.2rem;
+	width: var(--tool-width);
+	background-color: var(--background);
+	border-right: 1px solid var(--borderColor);
+}
 .tool-container::-webkit-scrollbar,
 .tool-container::-webkit-scrollbar-thumb {
 	width: 0;
@@ -31,14 +41,14 @@ body[data-theme='dark'] {
 	display: flex;
 	align-items: center;
 	flex-direction: column;
-	justify-content: center;
+	justify-content: start;
 	position: fixed;
-	top: 0;
+	top: 6.2rem;
 	left: 0;
-	bottom: 0;
 	font-size: 2rem;
 	overflow: hidden auto;
 	width: var(--tool-width);
+	height: calc(100vh - 6.2rem);
 	transition: all 0.2s ease;
 	background-color: var(--background);
 	border-right: 1px solid var(--borderColor);
@@ -147,6 +157,13 @@ body[data-theme='dark'] {
 .tool-container.active + .main-container {
 	--tool-width: 65px;
 }
+.tools {
+	position: relative;
+	margin-left: -2rem;
+	width: 100%;
+	height: 100%;
+	justify-content: start;
+}
 
 .main-container {
 	position: fixed;
@@ -193,7 +210,7 @@ body[data-theme='dark'] {
 .main-content .header span::after {
 	content: '';
 	position: absolute;
-	height: 0.8rem;
+	height: 0.6rem;
 	width: 75%;
 	left: 50%;
 	transform: translateX(-50%);
@@ -457,6 +474,7 @@ button:hover {
 	margin-left: 0.5rem;
 }
 .userSubmissionStalk .problemName {
+	display: inline-block;
 	padding: 1rem;
 	font-weight: 600;
 	border-radius: 2rem;
@@ -483,34 +501,52 @@ button:hover {
 }
 
 .extra-container {
-	position: fixed;
-	right: 2rem;
-	margin: 0;
+	position: relative;
+	display: flex;
+	align-items: center;
 	z-index: 10;
+	margin: 0;
 }
 .theme-container {
-	top: 2rem;
+	height: 8rem;
 }
 .calc-container {
-	top: 9rem;
+	height: 28rem;
 }
 .graph-container {
-	top: 16rem;
+	position: relative;
+	height: 8rem;
+}
+
+.graph-container iframe {
+	position: absolute;
+	margin-top: 7rem;
+	border: none;
+	inset: 0;
+}
+.graph-container .graphBtn {
+	width: auto;
+	display: flex;
+	align-items: center;
+}
+.graph-container .graphBtn span {
+	margin-left: 2rem;
+	font-size: 2rem;
+}
+.extras .all-content {
+	position: relative;
+	width: 100%;
 }
 
 .theme-select {
 	background-color: antiquewhite;
 	border-radius: 3rem;
-	top: 1rem;
-	right: 7rem;
-	display: none;
 	position: absolute;
-	align-items: center;
-	flex-direction: column;
-	justify-content: center;
-}
-.themeBtn.active + .theme-select {
+	left: 7rem;
 	display: flex;
+	align-items: center;
+	flex-flow: row wrap;
+	justify-content: center;
 }
 .theme-item {
 	position: relative;
@@ -525,8 +561,7 @@ button:hover {
 .extra-btn {
 	cursor: pointer;
 	position: absolute;
-	top: 0;
-	right: 0;
+	inset: 0 unset 0 0;
 	margin: 1rem;
 	width: 4.7rem;
 	height: 4.7rem;
@@ -536,10 +571,8 @@ button:hover {
 }
 
 .calc-simulator {
-	top: 1rem;
-	right: 7rem;
-	width: 65vw;
-	max-width: 70rem;
+	left: 7rem;
+	width: 90%;
 	height: 25rem;
 	position: absolute;
 	display: none;
@@ -549,7 +582,7 @@ button:hover {
 	border-radius: 2.5rem;
 	background-color: rgba(0, 0, 0, 0.8);
 }
-.calcBtn.active + .calc-simulator {
+.calcBtn + .calc-simulator {
 	display: flex;
 }
 .calc-simulator input {
@@ -559,7 +592,7 @@ button:hover {
 .calc-simulator #out-res {
 	padding: 1rem;
 	font-size: 3rem;
-    color: white;
+	color: white;
 }
 
 .all-btn {

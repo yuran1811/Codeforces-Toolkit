@@ -2,7 +2,6 @@
 
 const $ = document.querySelector.bind(document);
 const $$ = document.querySelectorAll.bind(document);
-
 const select = (par, child) => par.querySelector(child);
 const selectAll = (par, child) => par.querySelectorAll(child);
 
@@ -26,6 +25,7 @@ const contents = $$('.main-content');
 const problemsetContainer = $('.main-content.problemset');
 const stalkingContainer = $('.main-content.stalking');
 const bookmarksContainer = $('.main-content.bookmarks');
+const extrasContainer = $('.main-content.extras');
 
 const problemStatusList = [
 	'OK',
@@ -70,6 +70,13 @@ const problemStatus = {
 	},
 };
 
+const cvertDate = (date) => {
+	const items = date.split(' ');
+	items.length = 5;
+	return `${items.pop()} , ${items.shift()} - ${items.join(' | ')}`;
+};
+const hideAll = (list) => list.forEach((item) => (item.style.display = 'none'));
+
 let problemsData = JSON.parse(localStorage.getItem('problems')) || {};
 let lastUpdateTime = JSON.parse(localStorage.getItem('timeUpdate')) || '';
 let bmarkData = JSON.parse(localStorage.getItem('bookmarks')) || [];
@@ -80,16 +87,23 @@ let newListSize = 0;
 let stalkingContent;
 let stalkListCnt = 10;
 
-const hideAll = (list) => list.forEach((item) => (item.style.display = 'none'));
-
 const getProblemData = () => {
+	$('.timeUpdate').innerHTML = 'Syncing . . .';
 	async function getData() {
 		const response = await fetch(PROBLEM_API);
 		const data = await response.json();
+		const date = Date.now();
 		problemsData = data.result;
 		localStorage.setItem('problems', JSON.stringify(problemsData));
-		localStorage.setItem('timeUpdate', Date.now());
+		localStorage.setItem('timeUpdate', date);
 		$('.timeUpdate').innerHTML = 'Recently sync';
+		setTimeout(
+			() =>
+				($('.timeUpdate').innerHTML = cvertDate(
+					new Date(date).toString()
+				)),
+			1200
+		);
 	}
 	getData();
 };
@@ -320,32 +334,33 @@ toolItems.forEach((item, index) => {
 
 // Problemset Handle
 (() => {
-	problemsetContainer.innerHTML = `<div class="header">
-										<span class="title">Problemset</span>
-									</div>
-									<div class="timeUpdate">${
-										lastUpdateTime
-											? `Last update: ${new Date(
-													lastUpdateTime
-											  )}`
-											: 'Nothing changes'
-									}</div>
-									<form class="search-container">
-										<input placeholder="Search by name" type="text" id="nameSearch">
-										<input placeholder="Search by tags, split by space" type="text" id="tagSearch">
-										<div class="search-by-rating">
-											<input placeholder="Rating from" type="number" id="ratingFrom">
-											<input placeholder="Rating to" type="number" id="ratingTo">
-										</div>
-										<input placeholder="Contest ID" type="number" id="contestSearch">
-										<div class="all-btn">
-											<button class="submit">Search</button>
-											<button class="random">Random</button>
-											<button class="updateProblemBtn">Update</button>
-											<button class="tags-toggle">Hide Tags</button>
-										</div>
-									</form>
-									<div class="all-content"></div>`;
+	problemsetContainer.innerHTML = `
+		<div class="header">
+			<span class="title">Problemset</span>
+		</div>
+		<div class="timeUpdate">${
+			lastUpdateTime
+				? `Last update: ${cvertDate(
+						new Date(lastUpdateTime).toString()
+				  )}`
+				: 'Nothing changes'
+		}</div>
+		<form class="search-container">
+			<input placeholder="Search by name" type="text" id="nameSearch">
+			<input placeholder="Search by tags, split by space" type="text" id="tagSearch">
+			<div class="search-by-rating">
+				<input placeholder="Rating from" type="number" id="ratingFrom">
+				<input placeholder="Rating to" type="number" id="ratingTo">
+			</div>
+			<input placeholder="Contest ID" type="number" id="contestSearch">
+			<div class="all-btn">
+				<button class="submit">Search</button>
+				<button class="random">Random</button>
+				<button class="updateProblemBtn">Update</button>
+				<button class="tags-toggle">Hide Tags</button>
+			</div>
+		</form>
+		<div class="all-content"></div>`;
 
 	problemsData?.problems || getProblemData();
 
@@ -644,115 +659,164 @@ toolItems.forEach((item, index) => {
 	if (bmarkData) bmarkRender();
 })();
 
+// Extras Handle
+(() => {
+	extrasContainer.innerHTML = `
+		<div class="header"><span>Extras</span></div>
+		<div class="all-content">
+			<div class="extra-container theme-container">
+				<div class="extra-btn themeBtn">
+					<i class="bi bi-palette"></i>
+				</div>
+				<div class="extra theme-select"></div>
+			</div>
+
+			<div class="extra-container calc-container">
+				<div class="extra-btn calcBtn">
+					<i class="bi bi-calculator"></i>
+				</div>
+				<form class="extra calc-simulator">
+					<input
+						type="text"
+						id="inp-num"
+						placeholder="Num list input - split by a comma"
+					/>
+					<input
+						type="text"
+						id="inp-operator"
+						placeholder="Operator input - split by a comma"
+					/>
+					<div id="out-res"></div>
+				</form>
+			</div>
+
+			<div class="extra-container graph-container">
+				<a
+					href="./graphEditor.html"
+					target="_blank"
+					rel="noopener"
+					class="extra-btn graphBtn"
+				>
+					<i class="bi bi-activity"></i>
+					<span> Graph Editor (click here to open in the new tab)</span>
+				</a>
+
+				<iframe src="./graphEditor.html" width="100%" height="${innerHeight}"></iframe>
+			</div>
+		</div>`;
+
+	const disableExtrasActive = () => {
+		const allExtraActive = $$('div.extra-btn');
+		allExtraActive.forEach((item) => item.classList.remove('active'));
+	};
+
+	// const extraBtnHandle = () => {
+	// 	$$('div.extra-btn').forEach((item) => {
+	// 		item.addEventListener('click', (e) => {
+	// 			e.stopPropagation();
+
+	// 			const lastStatus = item.className.includes('active');
+	// 			disableExtrasActive();
+	// 			item.classList.toggle('active', !lastStatus);
+	// 		});
+	// 	});
+	// };
+	const themeHandle = () => {
+		const themeList = [
+			{ name: 'light', color: 'white' },
+			{ name: 'dark', color: 'black' },
+		];
+
+		$('.theme-select').innerHTML = themeList
+			.map(
+				(item) =>
+					`<div
+					class="theme-item"
+					data-theme="${item.name}"
+					style="background-color:${item.color}">
+				</div>`
+			)
+			.join('');
+
+		$$('.theme-item').forEach((item) => {
+			item.onclick = (e) => {
+				e.stopPropagation();
+				document.body.setAttribute('data-theme', item.dataset.theme);
+			};
+		});
+	};
+	const calcHandle = () => {
+		const calcSimulator = $('.calc-simulator');
+		const calcOutput = $('#out-res');
+		const inpNum = $('#inp-num');
+		const inpOperator = $('#inp-operator');
+		calcSimulator.onclick = (e) => e.stopPropagation();
+		calcSimulator.oninput = () => {
+			if (!inpNum.value || !inpOperator.value) {
+				calcOutput.innerHTML = '';
+				return;
+			}
+
+			const numArray = inpNum.value
+				.trim()
+				.split(',')
+				.map((item) => (item ? +item : 0));
+			const opeArray = inpOperator.value.trim().split(',');
+			const numArrayLth = numArray.length;
+
+			let res = numArray[0];
+			for (let i = 1; i < numArrayLth; i++) {
+				switch (opeArray[i - 1]) {
+					case '&':
+						res &= numArray[i];
+						break;
+					case '|':
+						res |= numArray[i];
+						break;
+					case '^':
+						res ^= numArray[i];
+						break;
+					case '+':
+						res += numArray[i];
+						break;
+					case '-':
+						res -= numArray[i];
+						break;
+					case '*':
+						res *= numArray[i];
+						break;
+					case '%':
+						res %= numArray[i];
+						break;
+					case '/':
+						if (numArray[i]) res /= numArray[i];
+						else {
+							calcOutput.innerHTML =
+								'Error! Becareful when divide by 0';
+							return;
+						}
+						break;
+					default:
+						calcOutput.innerHTML = 'Invalid operator input!';
+						break;
+				}
+			}
+			calcOutput.innerHTML = res;
+		};
+	};
+
+	(() => {
+		// extraBtnHandle();
+		themeHandle();
+		calcHandle();
+	})();
+
+	addEventListener('click', disableExtrasActive);
+})();
+
 // Menu Toggle Handle
 (() => {
 	const toolContainer = $('.tool-container');
 	const toolMenu = $('.tool-btn');
 	toolMenu.onclick = () => toolContainer.classList.toggle('active');
 })();
-
-// Extra Function
-const disableExtrasActive = () => {
-	const allExtraActive = $$('div.extra-btn');
-	allExtraActive.forEach((item) => item.classList.remove('active'));
-};
-
-const extraBtnHandle = () => {
-	$$('div.extra-btn').forEach((item) => {
-		item.addEventListener('click', (e) => {
-			e.stopPropagation();
-
-			const lastStatus = item.className.includes('active');
-			disableExtrasActive();
-			item.classList.toggle('active', !lastStatus);
-		});
-	});
-};
-const themeHandle = () => {
-	const themeList = [
-		{ name: 'light', color: 'white' },
-		{ name: 'dark', color: 'black' },
-	];
-
-	$('.theme-select').innerHTML = themeList
-		.map(
-			(item) =>
-				`<div
-					class="theme-item"
-					data-theme="${item.name}"
-					style="background-color:${item.color}">
-				</div>`
-		)
-		.join('');
-
-	$$('.theme-item').forEach((item) => {
-		item.onclick = (e) => {
-			e.stopPropagation();
-			document.body.setAttribute('data-theme', item.dataset.theme);
-		};
-	});
-};
-const calcHandle = () => {
-	const calcSimulator = $('.calc-simulator');
-	const calcOutput = $('#out-res');
-	const inpNum = $('#inp-num');
-	const inpOperator = $('#inp-operator');
-	calcSimulator.onclick = (e) => e.stopPropagation();
-	calcSimulator.oninput = () => {
-		if (!inpNum.value || !inpOperator.value) return;
-
-		const numArray = inpNum.value
-			.trim()
-			.split(',')
-			.map((item) => (item ? +item : 0));
-		const opeArray = inpOperator.value.trim().split(',');
-		const numArrayLth = numArray.length;
-
-		let res = numArray[0];
-		for (let i = 1; i < numArrayLth; i++) {
-			switch (opeArray[i - 1]) {
-				case '&':
-					res &= numArray[i];
-					break;
-				case '|':
-					res |= numArray[i];
-					break;
-				case '^':
-					res ^= numArray[i];
-					break;
-				case '+':
-					res += numArray[i];
-					break;
-				case '-':
-					res -= numArray[i];
-					break;
-				case '*':
-					res *= numArray[i];
-					break;
-				case '%':
-					res %= numArray[i];
-					break;
-				case '/':
-					if (numArray[i]) res /= numArray[i];
-					else {
-						calcOutput.innerHTML =
-							'Error! Becareful when divide by 0';
-						return;
-					}
-					break;
-				default:
-					calcOutput.innerHTML = 'Invalid operator input!';
-					break;
-			}
-		}
-		calcOutput.innerHTML = res;
-	};
-};
-
-(() => {
-	extraBtnHandle();
-	themeHandle();
-	calcHandle();
-})();
-
-addEventListener('click', disableExtrasActive);

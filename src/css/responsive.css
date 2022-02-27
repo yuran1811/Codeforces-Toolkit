@@ -45,4 +45,19 @@
 	.main-content .content-item__tags {
 		width: 60%;
 	}
+
+	.problemset input {
+		width: 60vw;
+		max-width: 60vw;
+	}
+	.problemset .all-btn {
+		flex-wrap: wrap;
+	}
+	.problemset .search-by-rating {
+		flex-direction: column;
+	}
+
+	.calc-simulator {
+		width: 80%;
+	}
 }

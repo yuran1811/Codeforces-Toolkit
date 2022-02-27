@@ -15,10 +15,6 @@ const tools = [
 		name: 'Stalking',
 		icon: '<i class="bi bi-person-bounding-box"></i>',
 	},
-	// {
-	// 	name: 'ProblemSubmission',
-	// 	icon: '<i class="bi bi-ui-radios"></i>',
-	// },
 	{
 		name: 'Problemset',
 		icon: '<i class="bi bi-list-task"></i>',
@@ -27,9 +23,13 @@ const tools = [
 		name: 'Bookmarks',
 		icon: '<i class="bi bi-bookmarks"></i>',
 	},
+	{
+		name: 'Extras',
+		icon: '<i class="bi bi-gear"></i>',
+	},
 ];
 
-const toolContainer = document.querySelector('.tool-container');
+const toolContainer = document.querySelector('.tools');
 const mainContainer = document.querySelector('.main-container');
 
 toolContainer.innerHTML += tools
