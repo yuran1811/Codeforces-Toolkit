@@ -130,7 +130,7 @@
 		},
 		{
 			label: 'Open Input Field',
-			content: ['Type "i" to show the config panel'],
+			content: ['Type "i" to show the input field'],
 		},
 		{
 			label: 'Add new node',
