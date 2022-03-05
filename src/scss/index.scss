@@ -1,0 +1,32 @@
+$XS: 480px;
+$SM: 768px;
+$MD: 1024px;
+$XL: 1170px;
+@mixin Responsive($size) {
+	@if $size == XS {
+		@media only screen and (min-width: $XS) {
+			@content;
+		}
+	} @else if $size == SM {
+		@media only screen and (min-width: $SM) {
+			@content;
+		}
+	} @else if $size == MD {
+		@media only screen and (min-width: $MD) {
+			@content;
+		}
+	} @else if $size == XL {
+		@media only screen and (min-width: $XL) {
+			@content;
+		}
+	}
+}
+
+/* 
+@include Responsive(SM) {}
+@include Responsive(MD) {}
+*/
+
+@import 'style';
+@import 'main';
+@import 'responsive';
