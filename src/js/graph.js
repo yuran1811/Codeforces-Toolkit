@@ -22,11 +22,11 @@ showDirect.checked = 1;
 let keyDown = 0;
 let mouseDown = 0;
 let mouseMove = 0;
-let moveSpeed = 5;
+let moveSpeed = 8;
 
 // Node Ele Func
-function nodeRemoveBtn(thisEle) {
-	const infoEl = thisEle.closest('.node-info');
+function nodeRemoveBtn(thisEl) {
+	const infoEl = thisEl.closest('.node-info');
 	nodeList.forEach((item, index) => {
 		if (item.value === +infoEl.dataset.value) {
 			nodeList.splice(index, 1);
@@ -50,18 +50,26 @@ function nodeRemoveBtn(thisEle) {
 		}
 	});
 }
-function nodeFromHandle(thisEle) {
-	// 	const infoEl = thisEle.closest('.node-info');
+function nodeWeightHandle(thisEl) {
+	const infoEl = thisEl.closest('.node-info');
+	nodeList.forEach((item) => {
+		if (item.value === +infoEl.dataset.value) {
+			item.weight = thisEl.value;
+		}
+	});
+}
+function nodeFromHandle(thisEl) {
+	// 	const infoEl = thisEl.closest('.node-info');
 	// 	nodeList.forEach(item => {
 	// 		if (item.value === +infoEl.dataset.value) {
-	// 			item.textNode = thisEle.value;
+	// 			item.textNode = thisEl.value;
 	// 			update();
 	// 		}
 	// 	})
 }
-function nodeToHandle(thisEle) {
-	const infoEl = thisEle.closest('.node-info');
-	const _this = thisEle;
+function nodeToHandle(thisEl) {
+	const infoEl = thisEl.closest('.node-info');
+	const _this = thisEl;
 	nodeList.forEach((mainItem) => {
 		if (mainItem.value === +infoEl.dataset.value) {
 			const inpList = [
@@ -106,14 +114,14 @@ function nodeToHandle(thisEle) {
 		}
 	});
 }
-const addNodeInfo = (id) => {
+const addNodeInfo = (id, weight = '', adjs = '') => {
 	nodeListContent.insertAdjacentHTML(
 		'beforeend',
 		`<div class="node-info" data-value="${id}">
 				<button class="node-remove" onclick="nodeRemoveBtn(this)">x</button>
 				<input class="node-from" value="${id}" onchange="nodeFromHandle(this)">
-				<input type="number" class="node-weight">
-				<input type="text" class="node-to" value="" onchange="nodeToHandle(this)">
+				<input type="number" class="node-weight" value="${weight}" onchange="nodeWeightHandle(this)">
+				<input type="text" class="node-to" value="${adjs}" onchange="nodeToHandle(this)">
 			</div>`
 	);
 	update();
@@ -340,11 +348,15 @@ const update = () => {
 // Feature Func
 const checkInside = ({ a, b }, { x, y }, r = +nodeRadiusEl.value) =>
 	calcDist({ a, b }, { x, y }) < r * r;
-const moveSpace = (e) => {
+const moveSpace = ({ clientX, clientY }) => {
 	mouseMove = 1;
+	// const middle = {
+	// 	x: innerWidth / 2,
+	// 	y: innerHeight / 2,
+	// };
 	const angle = Math.atan2(
-		(mouse.y || 0) - e.clientY,
-		(mouse.x || 0) - e.clientX
+		(mouse.y || 0) - clientY,
+		(mouse.x || 0) - clientX
 	);
 	coor.x -= Math.cos(angle) * moveSpeed;
 	coor.y -= Math.sin(angle) * moveSpeed;
@@ -468,8 +480,34 @@ const mouse = {
 	y: undefined,
 };
 
+// if (nodeList.length)
+// 	nodeList.forEach((item) =>
+// 		addNodeInfo(item.value, item.weight, item.listAdjTo)
+// 	);
+
 // Event Handles
 const inpAddNode = (nodeValue) => {
+	const getDelta = (r) => {
+		let amount = 4 * r + r / 3;
+		let delta = {
+			x: nodeList.length / 2 || 1,
+			y: nodeList.length / 2 || 1,
+		};
+
+		if (delta.x * amount > innerWidth / 2)
+			delta.x = innerWidth / 2 / amount;
+		if (delta.y * amount > innerHeight / 2)
+			delta.y = innerHeight / 2 / amount;
+		return {
+			x: delta.x * amount,
+			y: delta.y * amount,
+		};
+	};
+	const getPos = ({ x, y }, delta) => ({
+		a: Math.random() * (2 * delta.x) + (x - delta.x),
+		b: Math.random() * (2 * delta.y) + (y - delta.y),
+	});
+
 	const nodeInList = nodeList.find((item) => item.value === nodeValue);
 	if (nodeInList)
 		return {
@@ -477,13 +515,17 @@ const inpAddNode = (nodeValue) => {
 			node: nodeInList,
 		};
 
-	let nowNode = getRandPos();
+	let midPoint = {
+		x: innerWidth / 2,
+		y: innerHeight / 2,
+	};
 	let r = nodeRadiusEl.value;
+	let nowNode = getPos(midPoint, getDelta(r));
 	while (
 		nodeList.length &&
 		!nodeList.every((item) => calcDist(nowNode, item) > 4 * r * r)
 	)
-		nowNode = getRandPos();
+		nowNode = getPos(midPoint, getDelta(r));
 
 	return {
 		unique: 1,
@@ -518,18 +560,18 @@ const addHandle = () => {
 	});
 	addNodeInfo(idx);
 };
-addNodeBtn.onclick = addHandle;
 
+addNodeBtn.onclick = addHandle;
 showDirect.oninput = () => update();
 
-window.onresize = () => {
+onresize = () => {
 	canvas.width = innerWidth;
 	canvas.height = innerHeight;
 	update();
 };
 
 let animationID;
-window.onmousedown = (f) => {
+onmousedown = (f) => {
 	mouseDown = 1;
 	mouse.x = f.clientX;
 	mouse.y = f.clientY;
@@ -577,7 +619,7 @@ window.onmousedown = (f) => {
 			toolHandle(e, area);
 		})
 	);
-	window.onkeyup = () => (keyDown = 0);
+	onkeyup = () => (keyDown = 0);
 };
 
 addEventListener('mouseup', () => {
@@ -611,27 +653,35 @@ copyDataBtn.onclick = () => {
 	const getData = () =>
 		nodeList
 			.map((node) => {
-				const adjOfOthers = nodeList.some((item) =>
+				const isAdjsOthers = nodeList.some((item) =>
 					item.listAdjTo.map((x) => x.item.value).includes(node.value)
 				);
-				const adjData = node.listAdjTo
-					.map(
-						(adj) =>
-							`${node.value} ${adj.item.value}${
-								adj.weight
-									? ' ' + adj.weight.split('/').join(' ')
-									: ''
-							}\n`
-					)
-					.join('');
-				const adjOwnData = !adjData && !adjOfOthers ? node.value : '';
-				return adjData + adjOwnData;
+				const adjsOut =
+					node.listAdjTo
+						.map((adj) => {
+							const weightList = adj.weight.includes('/')
+								? adj.weight.split('/').join(' ')
+								: adj.weight;
+							return `${node.value} ${adj.item.value} ${
+								(adj.weight && weightList) || ''
+							}\n`;
+						})
+						.join('') || '';
+				const adjOwnData =
+					!adjsOut && !isAdjsOthers ? node.value + '\n' : '';
+
+				const node_nodeWeight = node.weight
+					? `${node.value} ${node.value} ${node.weight}\n`
+					: '';
+				return adjsOut + adjOwnData + node_nodeWeight;
 			})
 			.join('')
 			.trim();
 	const nodeListData = getData();
+
 	inpGr.value = nodeListData;
 	navigator.clipboard.writeText(nodeListData);
+
 	copyDataBtn.classList.add('btn--success');
 	setTimeout(() => copyDataBtn.classList.remove('btn--success'), 800);
 };
@@ -640,6 +690,7 @@ inpGr.onmousemove = (e) => e.stopPropagation();
 inpGr.oninput = (e) => {
 	nodeListContent.innerHTML = '';
 	nodeList.length = 0;
+
 	const lines = e.target.value.trim().split('\n');
 	lines.forEach((line) => {
 		if (!line[0]) return;
@@ -666,7 +717,35 @@ inpGr.oninput = (e) => {
 			directEdge && to.node.listAdjTo.push({ item: from.node, weight });
 		}
 	});
+	nodeList.forEach((item) => {
+		const adjs = item.listAdjTo
+			.map((adjItem) => {
+				const adjNode = adjItem.item.value;
+				const edgeWeight = adjItem.weight;
+				return adjNode + ':' + edgeWeight;
+			})
+			.join(',');
+		addNodeInfo(item.value, item.weight, adjs);
+	});
 	update();
 };
 
 update();
+
+/*
+1 2 3
+2 3 4
+3 4 5
+4 5 6
+5 6 7
+6 7 8
+7 8 9
+8 9 10
+9 10 11
+10 11 12
+11 12 13
+12 13 14
+13 14 15
+14 15 16
+15 16 17
+*/

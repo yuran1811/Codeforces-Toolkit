@@ -11,11 +11,12 @@ const PB_CONTEST_LINK = (item) =>
 const SUBMIT_LINK = (item) =>
 	`https://codeforces.com/contest/${item.contestId}/submit`;
 
-const PROBLEM_API = 'https://codeforces.com/api/problemset.problems';
-const USER_STATUS_API = 'https://codeforces.com/api/user.status?handle=';
-const USER_INFO_API = 'https://codeforces.com/api/user.info?handles=';
-const USER_RATING_API = 'https://codeforces.com/api/user.rating?handle=';
-const CONTEST_API = 'https://codeforces.com/api/contest.list';
+const CF_API = `https://codeforces.com/api`;
+const CONTEST_API = `${CF_API}/contest.list`;
+const PROBLEM_API = `${CF_API}/problemset.problems`;
+const USER_INFO_API = `${CF_API}/user.info?handles=`;
+const USER_STATUS_API = `${CF_API}/user.status?handle=`;
+const USER_RATING_API = `${CF_API}/user.rating?handle=`;
 
 const bmNoFill = `<i class="bi bi-bookmarks"></i>`;
 const bmFill = `<i class="bi bi-bookmarks-fill"></i>`;
@@ -27,15 +28,6 @@ const stalkingContainer = $('.main-content.stalking');
 const bookmarksContainer = $('.main-content.bookmarks');
 const extrasContainer = $('.main-content.extras');
 
-const problemStatusList = [
-	'OK',
-	'TIME_LIMIT_EXCEEDED',
-	'MEMORY_LIMIT_EXCEEDED',
-	'COMPILATION_ERROR',
-	'RUNTIME_ERROR',
-	'FAILED',
-	'WRONG_ANSWER',
-];
 const problemStatus = {
 	OK: {
 		color: '#00a92a',
@@ -69,6 +61,15 @@ const problemStatus = {
 		color: 'lightgrey',
 	},
 };
+const problemStatusList = [
+	'OK',
+	'TIME_LIMIT_EXCEEDED',
+	'MEMORY_LIMIT_EXCEEDED',
+	'COMPILATION_ERROR',
+	'RUNTIME_ERROR',
+	'FAILED',
+	'WRONG_ANSWER',
+];
 
 const cvertDate = (date) => {
 	const items = date.split(' ');
@@ -77,8 +78,8 @@ const cvertDate = (date) => {
 };
 const hideAll = (list) => list.forEach((item) => (item.style.display = 'none'));
 
-let problemsData = JSON.parse(localStorage.getItem('problems')) || {};
 let lastUpdateTime = JSON.parse(localStorage.getItem('timeUpdate')) || '';
+let problemsData = JSON.parse(localStorage.getItem('problems')) || {};
 let bmarkData = JSON.parse(localStorage.getItem('bookmarks')) || [];
 
 let listCnt = 0;
