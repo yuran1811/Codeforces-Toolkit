@@ -11,6 +11,8 @@ const nodeListContent = document.querySelector('.node-list .content');
 const addNodeBtn = document.querySelector('.add-btn');
 const copyDataBtn = document.querySelector('.copy-btn');
 const showDirect = document.querySelector('.show-direct');
+const showNodeWeight = document.querySelector('.show-node-weight');
+const copyNodeWeight = document.querySelector('.copy-node-weight');
 const inpGr = document.querySelector('.input-group');
 const canvas = document.querySelector('#app');
 const c = canvas.getContext('2d');
@@ -278,7 +280,6 @@ const drawEdgeWeight = (a, b, { curve = 0, cp }) => {
 	const newList = a.listAdjTo.map((item) => item.item.value);
 	const idx = newList.indexOf(b.value);
 	const weight = a.listAdjTo[idx].weight;
-	if (!weight || weight == 0) return;
 
 	const pos = {
 		x: curve ? cp.x : (b.x + a.x) / 2 + coor.x,
@@ -304,7 +305,6 @@ const drawNodeWeight = (item) => {
 			return;
 		}
 	});
-	if (!weight) return;
 
 	c.beginPath();
 	c.font = '40px Trebuchet MS';
@@ -322,7 +322,7 @@ const update = () => {
 		trimAdjArray(item.listAdjTo);
 		item.listAdjTo.forEach((adj) => {
 			if (item.x === adj.item.x && item.y === adj.item.y) {
-				drawDirOwn(item);
+				showNodeWeight.checked && drawDirOwn(item);
 			} else if (nodeList.map((x) => x.value).includes(adj.item.value)) {
 				if (
 					adj.item.listAdjTo
@@ -338,7 +338,7 @@ const update = () => {
 	nodeList.forEach((item) => {
 		drawPoint(item);
 		drawNodeValue(item);
-		drawNodeWeight(item);
+		showNodeWeight.checked && drawNodeWeight(item);
 	});
 
 	c.save();
@@ -390,7 +390,7 @@ const addNode = (e, f) => {
 			array[key].push({
 				x: newPos.a,
 				y: newPos.b,
-				weight: 0,
+				weight: '0',
 				value: idx,
 				textNode: idx,
 				listAdjTo: [],
@@ -453,7 +453,7 @@ const tool = {
 			);
 
 			strokeList.forEach((item) =>
-				root.listAdjTo.push({ item: item, weight: 0 })
+				root.listAdjTo.push({ item: item, weight: '0' })
 			);
 			strokeList.length = 0;
 			update();
@@ -532,7 +532,7 @@ const inpAddNode = (nodeValue) => {
 		node: {
 			x: nowNode.a,
 			y: nowNode.b,
-			weight: 0,
+			weight: '0',
 			listAdjTo: [],
 			value: nodeValue,
 			textNode: nodeValue,
@@ -553,7 +553,7 @@ const addHandle = () => {
 	nodeList.push({
 		x: nowNode.a,
 		y: nowNode.b,
-		weight: 0,
+		weight: '0',
 		listAdjTo: [],
 		value: idx,
 		textNode: idx,
@@ -563,6 +563,7 @@ const addHandle = () => {
 
 addNodeBtn.onclick = addHandle;
 showDirect.oninput = () => update();
+showNodeWeight.oninput = () => update();
 
 onresize = () => {
 	canvas.width = innerWidth;
@@ -659,7 +660,7 @@ copyDataBtn.onclick = () => {
 				const adjsOut =
 					node.listAdjTo
 						.map((adj) => {
-							const weightList = adj.weight.includes('/')
+							const weightList = adj.weight?.includes('/')
 								? adj.weight.split('/').join(' ')
 								: adj.weight;
 							return `${node.value} ${adj.item.value} ${
@@ -673,7 +674,11 @@ copyDataBtn.onclick = () => {
 				const node_nodeWeight = node.weight
 					? `${node.value} ${node.value} ${node.weight}\n`
 					: '';
-				return adjsOut + adjOwnData + node_nodeWeight;
+				return (
+					adjsOut +
+					adjOwnData +
+					(copyNodeWeight.checked ? node_nodeWeight : '')
+				);
 			})
 			.join('')
 			.trim();
@@ -687,16 +692,17 @@ copyDataBtn.onclick = () => {
 };
 
 inpGr.onmousemove = (e) => e.stopPropagation();
-inpGr.oninput = (e) => {
+inpGr.oninput = function () {
 	nodeListContent.innerHTML = '';
 	nodeList.length = 0;
 
-	const lines = e.target.value.trim().split('\n');
+	const lines = this.value.trim().split('\n');
 	lines.forEach((line) => {
 		if (!line[0]) return;
 		const directEdge = !showDirect.checked;
 		const arr = line
 			.trim()
+			.replace(/[^0-9 ]+/g, '')
 			.split(' ')
 			.map((item) => +item);
 		const from = inpAddNode(arr[0]);
@@ -705,9 +711,9 @@ inpGr.oninput = (e) => {
 		if (arr.length === 2) {
 			const to = inpAddNode(arr[1]);
 			to.unique && nodeList.push(to.node);
-			from.node.listAdjTo.push({ item: to.node, weight: 0 });
+			from.node.listAdjTo.push({ item: to.node, weight: '0' });
 			directEdge &&
-				to.node.listAdjTo.push({ item: from.node, weight: 0 });
+				to.node.listAdjTo.push({ item: from.node, weight: '0' });
 		}
 		if (arr.length > 2) {
 			const to = inpAddNode(arr[1]);
@@ -717,6 +723,7 @@ inpGr.oninput = (e) => {
 			directEdge && to.node.listAdjTo.push({ item: from.node, weight });
 		}
 	});
+
 	nodeList.forEach((item) => {
 		const adjs = item.listAdjTo
 			.map((adjItem) => {

@@ -50,7 +50,19 @@
 					tooltip: 0,
 				},
 				{
-					name: 'Show Direct',
+					name: 'Show direct',
+					input: 'checkbox',
+					value: '',
+					tooltip: 0,
+				},
+				{
+					name: 'Show node weight',
+					input: 'checkbox',
+					value: '',
+					tooltip: 0,
+				},
+				{
+					name: 'Copy node weight',
 					input: 'checkbox',
 					value: '',
 					tooltip: 0,
@@ -75,10 +87,9 @@
 							.map((color) => {
 								return `<input
 											class="${cvert(color)} ${color.tooltip ? 'tooltip' : ''}"
-											type="${color.input}"
-											value="${color.value}"
+											type="${color.input}" value="${color.value}"
 											${color.tooltip ? `data-ctx="${color.name}"` : ''}
-											>`;
+										>`;
 							})
 							.join('')}
 					</div>`
@@ -130,7 +141,10 @@
 		},
 		{
 			label: 'Open Input Field',
-			content: ['Type "i" to show the input field'],
+			content: [
+				'Type "i" to show the input field',
+				'For better experience of using this feature, just paste the input without edition in the "input field" - just make changes in the "Config panel" and copy them',
+			],
 		},
 		{
 			label: 'Add new node',
