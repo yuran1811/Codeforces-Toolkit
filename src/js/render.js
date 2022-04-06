@@ -27,6 +27,10 @@ const tools = [
 		name: 'Extras',
 		icon: '<i class="bi bi-gear"></i>',
 	},
+	{
+		name: 'Profile',
+		icon: '<i class="bi bi-person"></i>',
+	},
 ];
 
 const toolContainer = document.querySelector('.tools');

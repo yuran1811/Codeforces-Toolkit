@@ -5,26 +5,28 @@
 	box-sizing: border-box;
 	padding: 0;
 	margin: 0;
-}
-*::-webkit-scrollbar {
-	width: 7px;
-}
-*::-webkit-scrollbar-thumb {
-	background: grey;
-	border-radius: 10px;
+	&::-webkit-scrollbar {
+		width: 7px;
+		&-thumb {
+			background: grey;
+			border-radius: 10px;
+		}
+	}
 }
 
 html {
 	font-size: 62.5%;
 }
 
-a:link,
-a:visited,
-a:hover,
-a:active,
-a:focus {
-	text-decoration: none;
-	color: var(--color);
+a {
+	&:link,
+	&:visited,
+	&:hover,
+	&:active,
+	&:focus {
+		text-decoration: none;
+		color: var(--color);
+	}
 }
 
 input,
@@ -36,8 +38,8 @@ output {
 	font-size: 2rem;
 	padding: 2rem 1rem;
 	border-radius: 2rem;
-	border-color: var(--borderColor);
-	background-color: var(--color);
-	color: var(--background);
+	color: var(--color);
+	border: 0.2rem solid var(--color);
+	background-color: var(--background);
 	outline: none;
 }

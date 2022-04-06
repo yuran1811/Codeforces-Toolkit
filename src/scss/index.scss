@@ -2,6 +2,7 @@ $XS: 480px;
 $SM: 768px;
 $MD: 1024px;
 $XL: 1170px;
+
 @mixin Responsive($size) {
 	@if $size == XS {
 		@media only screen and (min-width: $XS) {

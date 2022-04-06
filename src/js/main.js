@@ -5,28 +5,39 @@ const $$ = document.querySelectorAll.bind(document);
 const select = (par, child) => par.querySelector(child);
 const selectAll = (par, child) => par.querySelectorAll(child);
 
+const storageData = {
+	get: (_, key) => JSON.parse(_.getItem(key)),
+	set: (_, key, val) => _.setItem(key, JSON.stringify(val)),
+	del: (_, key) => _.removeItem(key),
+};
+
+let thisUserId = storageData.get(sessionStorage, 'id') || 'null';
+let thisUserName = storageData.get(sessionStorage, 'name') || 'null';
+let thisUserPass = storageData.get(sessionStorage, 'pass') || 'null';
+let lastUpdateTime = storageData.get(localStorage, 'timeUpdate') || '';
+let problemsData = storageData.get(localStorage, 'problems') || {};
+let bmarkData = storageData.get(localStorage, 'bookmarks') || [];
+
 const PROBLEM_LINK = 'https://codeforces.com/problemset/problem/';
-const PB_CONTEST_LINK = (item) =>
-	`https://codeforces.com/contest/${item.contestId}/problem/${item.index}`;
-const SUBMIT_LINK = (item) =>
-	`https://codeforces.com/contest/${item.contestId}/submit`;
+const PB_CONTEST_LINK = ({ contestId, index }) =>
+	`https://codeforces.com/contest/${contestId}/problem/${index}`;
+const SUBMIT_LINK = ({ contestId }) =>
+	`https://codeforces.com/contest/${contestId}/submit`;
 
-const CF_API = `https://codeforces.com/api`;
-const CONTEST_API = `${CF_API}/contest.list`;
-const PROBLEM_API = `${CF_API}/problemset.problems`;
-const USER_INFO_API = `${CF_API}/user.info?handles=`;
-const USER_STATUS_API = `${CF_API}/user.status?handle=`;
-const USER_RATING_API = `${CF_API}/user.rating?handle=`;
+const CF_TOOLKIT_API = {
+	link: ``,
+	test: `http://localhost:1811/api`,
+};
+const API_LINK = CF_TOOLKIT_API.test;
 
-const bmNoFill = `<i class="bi bi-bookmarks"></i>`;
-const bmFill = `<i class="bi bi-bookmarks-fill"></i>`;
-
-const toolItems = $$('.tool-item');
-const contents = $$('.main-content');
-const problemsetContainer = $('.main-content.problemset');
-const stalkingContainer = $('.main-content.stalking');
-const bookmarksContainer = $('.main-content.bookmarks');
-const extrasContainer = $('.main-content.extras');
+const CF_API_LINK = `https://codeforces.com/api`;
+const CF_API = {
+	contest: `${CF_API_LINK}/contest.list`,
+	problem: `${CF_API_LINK}/problemset.problems`,
+	user_info: `${CF_API_LINK}/user.info?handles=`,
+	user_status: `${CF_API_LINK}/user.status?handle=`,
+	user_rating: `${CF_API_LINK}/user.rating?handle=`,
+};
 
 const problemStatus = {
 	OK: {
@@ -70,17 +81,31 @@ const problemStatusList = [
 	'FAILED',
 	'WRONG_ANSWER',
 ];
-
-const cvertDate = (date) => {
-	const items = date.split(' ');
-	items.length = 5;
-	return `${items.pop()} , ${items.shift()} - ${items.join(' | ')}`;
+const data = {
+	bookmarks: [],
 };
-const hideAll = (list) => list.forEach((item) => (item.style.display = 'none'));
+const thisUser = {
+	name: thisUserName,
+	pass: thisUserPass,
+	id: thisUserId,
+};
 
-let lastUpdateTime = JSON.parse(localStorage.getItem('timeUpdate')) || '';
-let problemsData = JSON.parse(localStorage.getItem('problems')) || {};
-let bmarkData = JSON.parse(localStorage.getItem('bookmarks')) || [];
+const bmNoFill = `<i class="bi bi-bookmarks"></i>`;
+const bmFill = `<i class="bi bi-bookmarks-fill"></i>`;
+
+const loading = $('.loading');
+const toolItems = $$('.tool-item');
+const contents = $$('.main-content');
+const stalkingContainer = $('.main-content.stalking');
+const problemsetContainer = $('.main-content.problemset');
+const bookmarksContainer = $('.main-content.bookmarks');
+const extrasContainer = $('.main-content.extras');
+const profileContainer = $('.main-content.profile');
+
+let logInForm;
+let logInPassInp;
+let logInPassMode;
+let errMsg;
 
 let listCnt = 0;
 let newList = [];
@@ -88,116 +113,187 @@ let newListSize = 0;
 let stalkingContent;
 let stalkListCnt = 10;
 
-const getProblemData = () => {
-	$('.timeUpdate').innerHTML = 'Syncing . . .';
-	async function getData() {
-		const response = await fetch(PROBLEM_API);
-		const data = await response.json();
-		const date = Date.now();
-		problemsData = data.result;
-		localStorage.setItem('problems', JSON.stringify(problemsData));
-		localStorage.setItem('timeUpdate', date);
-		$('.timeUpdate').innerHTML = 'Recently sync';
-		setTimeout(
-			() =>
-				($('.timeUpdate').innerHTML = cvertDate(
-					new Date(date).toString()
-				)),
-			1200
-		);
-	}
-	getData();
+const hideAll = (list) => list.forEach((item) => (item.style.display = 'none'));
+const cvertDate = (date) => {
+	const items = date.split(' ');
+	items.length = 5;
+	return `${items.pop()} , ${items.shift()} - ${items.join(' | ')}`;
 };
 
 const bmarkRender = () => {
 	const bookmarks = select(bookmarksContainer, '.all-content');
 	bookmarks.innerHTML = bmarkData
-		.map(
-			(item) => `
-				<div class="bmark-item" data-id="${item.id}">
-					<i class="bi bi-x-circle" onclick="bmarkDelete(event)"></i>
-					${item.data}
-				</div>`
-		)
+		.map((item) => {
+			const pblemId = item.contestId + String(item.index.charCodeAt(0));
+			const pblemTags = item.tags.map((item) => item).join(', ');
+			return `
+			<div
+				class="bmark-item"
+				data-id="${item.id}"
+				data-problemid="${pblemId}"
+				data-contestid="${item.contestId}"
+				data-name="${item.name}"
+				data-index="${item.index}"
+				data-rating="${item?.rating || 0}"
+				data-tags="${pblemTags}"
+			>
+				<i class="bi bi-x-circle" onclick="bmarkDelete(event)"></i>
+				${item.data}
+			</div>`;
+		})
 		.join('');
-	localStorage.setItem('bookmarks', JSON.stringify(bmarkData));
+	storageData.set(localStorage, 'bookmarks', bmarkData);
 };
 const bmarkDelete = (e) => {
 	e.stopPropagation();
 	const bmItem = e.target.closest('.bmark-item');
 
-	bmarkData.forEach((item, index) => {
-		if (item.id === bmItem.dataset.id) {
-			bmarkData.splice(index, 1);
+	// Remove from data
+	bmarkData.forEach((item, idx) => {
+		if (item.id !== bmItem.dataset.id) return;
+		const { contestId, index } = item;
+
+		confirm('Delete this bookmark ?');
+
+		bmarkData.splice(idx, 1);
+
+		const { name, pass } = thisUser;
+		if (name !== 'null' && pass !== 'null') {
+			fetch(
+				`${API_LINK}/bookmarks/del/${name}/${pass}/${contestId}/${index}`
+			)
+				.then(() => {
+					console.log('Success');
+				})
+				.catch(console.error);
 		}
 	});
 	bmarkRender();
 
+	// Remove from UI
 	const delList = selectAll(
 		document,
 		`.problem-item[data-problemid="${bmItem.dataset.id}"] .bmContainer`
 	);
-	delList.forEach((item) => item.classList.remove('fill'));
+	delList.forEach((_) => _.classList.remove('fill'));
 };
 const bmarksHandle = (e) => {
 	const thisItem = e.currentTarget;
 	const pblemItem = thisItem.closest('.problem-item');
+	const data = {
+		contestId: +pblemItem.dataset.contestid,
+		index: pblemItem.dataset.index,
+		name: pblemItem.dataset.name,
+		rating: +pblemItem.dataset.rating,
+		tags: pblemItem.dataset.tags.split(', '),
+	};
 
 	thisItem.classList.toggle('fill');
 	if (thisItem.className.includes('fill')) {
-		if (!bmarkData.some((item) => item.id === pblemItem.dataset.problemid))
+		if (!bmarkData.some((_) => _.id === pblemItem.dataset.problemid)) {
 			bmarkData.push({
+				...data,
 				id: pblemItem.dataset.problemid,
 				data: pblemItem.innerHTML,
 			});
+
+			const { name, pass } = thisUser;
+			if (name !== 'null' && pass !== 'null') {
+				console.log(data);
+				fetch(`${API_LINK}/bookmarks/add/${name}/${pass}`, {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(data),
+				})
+					.then(() => {
+						console.log('Success');
+					})
+					.catch(console.error);
+			}
+		}
 	} else {
-		bmarkData.forEach((item, index) => {
-			if (item.id === pblemItem.dataset.problemid)
+		bmarkData.forEach((_, index) => {
+			if (_.id === pblemItem.dataset.problemid) {
 				bmarkData.splice(index, 1);
+
+				confirm('Delete this bookmark ?');
+				const { name, pass, id } = thisUser;
+				if (name && pass) {
+					fetch(
+						`${API_LINK}/bookmarks/del/${name}/${pass}/${data.contestId}/${data.index}`
+					)
+						.then(() => {
+							console.log('Success');
+						})
+						.catch(console.error);
+				}
+			}
 		});
 	}
 	bmarkRender();
 };
 
+const getProblemData = () => {
+	$('.timeUpdate').innerHTML = 'Syncing . . .';
+	(async () => {
+		const res = await fetch(CF_API.problem);
+		const data = await res.json();
+		const time = Date.now();
+
+		problemsData = data.result;
+
+		storageData.set(localStorage, 'problems', problemsData);
+		storageData.set(localStorage, 'timeUpdate', time);
+
+		$('.timeUpdate').innerHTML = 'Recently sync';
+		setTimeout(
+			() =>
+				($('.timeUpdate').innerHTML = cvertDate(
+					new Date(time).toString()
+				)),
+			1200
+		);
+	})();
+};
 const getList = (problems) => {
+	const getTrimValue = (_, type = 0) =>
+		type ? _.value.trim().toLowerCase() : _.value.trim();
+
 	const nameSearch = $('#nameSearch');
 	const tagSearch = $('#tagSearch');
 	const ratingFrom = $('#ratingFrom');
 	const ratingTo = $('#ratingTo');
 	const contestSearch = $('#contestSearch');
 
-	const nameSearchValue = nameSearch.value.trim().toLowerCase();
-	const tagSearchValue = tagSearch.value.trim().toLowerCase();
-	const ratingFromValue = Number(ratingFrom.value.trim());
-	const ratingToValue = Number(ratingTo.value.trim());
-	const contestSearchValue = contestSearch.value.trim();
+	const nameSearchValue = getTrimValue(nameSearch, 1);
+	const tagSearchValue = getTrimValue(tagSearch, 1);
+	const ratingFromValue = Number(getTrimValue(ratingFrom));
+	const ratingToValue = Number(getTrimValue(ratingTo));
+	const contestSearchValue = getTrimValue(contestSearch);
 
 	let problemList = Array.from(problems);
 
 	if (nameSearchValue)
-		problemList = problemList.filter((item) =>
-			item.name.toLowerCase().includes(nameSearchValue)
+		problemList = problemList.filter(({ name }) =>
+			name.toLowerCase().includes(nameSearchValue)
 		);
 
 	if (tagSearchValue)
-		problemList = problemList.filter((item) =>
-			item.tags.some((tag) => tagSearchValue.toLowerCase().includes(tag))
+		problemList = problemList.filter(({ tags }) =>
+			tags.some((tag) => tagSearchValue.toLowerCase().includes(tag))
 		);
 
 	if (ratingFromValue || ratingToValue)
-		problemList = problemList.filter((item) => {
+		problemList = problemList.filter(({ rating }) => {
 			if (ratingFromValue && ratingToValue)
-				return (
-					ratingFromValue <= item.rating &&
-					item.rating <= ratingToValue
-				);
-			if (ratingFromValue) return ratingFromValue <= item.rating;
-			return item.rating <= ratingToValue;
+				return ratingFromValue <= rating && rating <= ratingToValue;
+			if (ratingFromValue) return ratingFromValue <= rating;
+			return rating <= ratingToValue;
 		});
 
 	if (contestSearchValue)
 		problemList = problemList.filter(
-			(item) => item.contestId == contestSearchValue
+			({ contestId }) => contestId == contestSearchValue
 		);
 
 	return problemList;
@@ -207,51 +303,54 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 		.slice(from, to)
 		.map((item) => {
 			const pblemId = item.contestId + String(item.index.charCodeAt(0));
-			return `
-					<div
-						class="problem-item"
-						data-problemid="${pblemId}">
-						<div class="bmContainer ${
-							bmarkData.some((bm) => bm.id === pblemId) && 'fill'
-						}" onclick="bmarksHandle(event)">
-							${bmNoFill}
-							${bmFill}
-						</div>
-						<a
-							class="in-contest-link"
-							target="_blank"
-							rel="noopener"
-							href="${PB_CONTEST_LINK(item)}">
-							<i class="bi bi-box-arrow-in-up-right"></i>
-						</a>
-						<a
-							class="submit-link"
-							target="_blank"
-							rel="noopener"
-							href="${SUBMIT_LINK(item)}">
-							<i class="bi bi-code"></i>
-						</a>
-						<a
-							class="content-item" target="_blank" rel="noopener"
-							href="${PROBLEM_LINK}/${item.contestId}/${item.index}">
-							<div class="content-item__info">
-								<span class="content-item__info-index">
-									${item.index + ' - '}
-								</span>
-								<span class="content-item__info-name">
-									${item.name}
-								</span>
-							</div>
+			const pblemTags = item.tags.map((item) => item).join(', ');
+			const pblemRating = item?.rating || 'Unrated';
+			const pblemStatus = bmarkData.some((_) => _.id === pblemId)
+				? 'fill'
+				: '';
 
-							<div class="content-item__tags">
-								${item.tags.map((item) => item).join(', ')}
-							</div>
-							<div class="content-item__rating">
-								<span class="label">Rating:</span>
-								<span class="rating"> ${item?.rating || 'Unrated'}</span>
-							</div>
-						</a>
-					</div>`;
+			return `
+		<div
+			class="problem-item"
+			data-problemid="${pblemId}"
+			data-contestid="${item.contestId}"
+			data-name="${item.name}"
+			data-index="${item.index}"
+			data-rating="${item?.rating || 0}"
+			data-tags="${pblemTags}"
+		>
+			<div class="bmContainer ${pblemStatus}" onclick="bmarksHandle(event)">
+				${bmNoFill + bmFill}
+			</div>
+			<a
+				class="in-contest-link" target="_blank" rel="noopener"
+				href="${PB_CONTEST_LINK(item)}">
+				<i class="bi bi-box-arrow-in-up-right"></i>
+			</a>
+			<a
+				class="submit-link" target="_blank" rel="noopener"
+				href="${SUBMIT_LINK(item)}">
+				<i class="bi bi-code"></i>
+			</a>
+			<a
+				class="content-item" target="_blank" rel="noopener"
+				href="${PROBLEM_LINK}/${item.contestId}/${item.index}">
+				<div class="content-item__info">
+					<span class="content-item__info-index">
+						${item.index + ' - '}
+					</span>
+					<span class="content-item__info-name">
+						${item.name}
+					</span>
+				</div>
+
+				<div class="content-item__tags"> ${pblemTags} </div>
+				<div class="content-item__rating">
+					<span class="label">Rating:</span>
+					<span class="rating"> ${pblemRating}</span>
+				</div>
+			</a>
+		</div>`;
 		})
 		.join('');
 };
@@ -259,34 +358,33 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 const stalkRender = (data) => {
 	stalkingContent = select(stalkingContainer, '.all-content');
 	stalkingContent.innerHTML = '';
-	data.forEach(
-		(user) =>
-			(stalkingContent.innerHTML += `
-					<div class="userSubmissionStalk">
-						<div class="problemDetail">
-							<a
-								class="problemName"
-								href="${PB_CONTEST_LINK(user.problem)}"
-								rel="noopener"
-								target="_blank"
-							>${user.problem.name}</a>
-							<span class="problemRate">${user.problem?.rating || 'Unrated'}</span>
-							<span class="problemVerdict" style="color:${
-								problemStatusList.includes(user.verdict)
-									? problemStatus[user.verdict].color
-									: problemStatus['OTHER'].color
-							}">
-							${
-								problemStatusList.includes(user.verdict)
-									? problemStatus[user.verdict].text
-									: user.verdict
-							}</span>
-						</div>
-						<div class="time" style="text-align: center">${new Date(
-							user.creationTimeSeconds * 1000
-						)}</div>
-					</div>`)
-	);
+	data.forEach((user) => {
+		stalkingContent.innerHTML += `
+		<div class="userSubmissionStalk">
+			<div class="problemDetail">
+				<a
+					class="problemName" target="_blank" rel="noopener"
+					href="${PB_CONTEST_LINK(user.problem)}"
+				>${user.problem.name}</a>
+
+				<span class="problemRate">${user.problem?.rating || 'Unrated'}</span>
+
+				<span class="problemVerdict" style="color:${
+					problemStatusList.includes(user.verdict)
+						? problemStatus[user.verdict].color
+						: problemStatus['OTHER'].color
+				}">
+				${
+					problemStatusList.includes(user.verdict)
+						? problemStatus[user.verdict].text
+						: user.verdict
+				}</span>
+			</div>
+			<div class="time" style="text-align: center">${new Date(
+				user.creationTimeSeconds * 1000
+			)}</div>
+		</div>`;
+	});
 };
 const loadEvent = (e) => {
 	e.target.style.display = 'none';
@@ -297,41 +395,100 @@ const loadEvent = (e) => {
 		listCnt + 20
 	);
 	listCnt += 20;
-	if (listCnt < newListSize)
-		problemsetAllContent.innerHTML += `<button class="load-more" onclick="loadEvent(event)">Load More</button>`;
+	if (listCnt >= newListSize) return;
+
+	problemsetAllContent.innerHTML += `
+		<button class="load-more" onclick="loadEvent(event)">Load More</button>`;
 };
 const stalkLoadEvent = (e) => {
-	const searchBar = $('#stalkHandle');
 	e.target.style.display = 'none';
+
+	const searchBar = $('#stalkHandle');
 	(async () => {
 		const value = searchBar.value.trim();
 		const response = await fetch(
-			`${USER_STATUS_API}${value}&from=${stalkListCnt + 1}&count=${
+			`${CF_API.user_status}${value}&from=${stalkListCnt + 1}&count=${
 				stalkListCnt + 10
 			}`
 		);
 		stalkListCnt += 10;
 		const data = await response.json();
 		stalkRender(data.result);
-		stalkingContent.innerHTML += `<button class="load-more" onclick="stalkLoadEvent(event)">Load More</button>`;
+		stalkingContent.innerHTML += `
+		<button class="load-more" onclick="stalkLoadEvent(event)">Load More</button>`;
 	})();
 };
 
+const inputAvoidSubmit = (e) => {
+	if (e.key === 'Enter') {
+		e.preventDefault();
+		e.stopPropagation();
+	}
+};
+const logInHandle = async (e) => {
+	e.preventDefault();
+
+	const name = e.target.querySelector('.name').value.trim();
+	const pass = e.target.querySelector('.pass').value.trim();
+	if (!name || !pass) return;
+
+	loading.classList.add('active');
+	const res = await fetch(`${API_LINK}/users/auth/${name}/${pass}`);
+	const { auth, id } = await res.json();
+	loading.classList.remove('active');
+
+	let lastWrong;
+	if (!auth) {
+		errMsg.classList.add('isErr');
+		lastWrong && clearTimeout(lastWrong);
+		lastWrong = setTimeout(() => {
+			errMsg.classList.remove('isErr');
+		}, 3000);
+		thisUser.name = '';
+		thisUser.pass = '';
+		thisUser.id = '';
+	} else {
+		document.body.classList.add('isAuth');
+		thisUser.name = name;
+		thisUser.pass = pass;
+		thisUser.id = id;
+	}
+
+	storageData.set(sessionStorage, 'id', id);
+	storageData.set(sessionStorage, 'isAuth', auth);
+	storageData.set(sessionStorage, 'name', thisUser.name);
+	storageData.set(sessionStorage, 'pass', thisUser.pass);
+};
+
 toolItems.forEach((item, index) => {
-	item.onclick = (e) => {
+	item.onclick = function () {
 		const lastToolActive = $('.tool-container .active');
-		if (lastToolActive && lastToolActive !== e.currentTarget) {
-			lastToolActive.className = lastToolActive.className.replace(
-				' active',
-				''
-			);
-		}
-		e.currentTarget.classList.add('active');
+		if (lastToolActive && lastToolActive !== this)
+			lastToolActive.classList.remove('active');
+		this.classList.add('active');
 
 		hideAll(contents);
 		contents[index].style.display = 'flex';
 	};
 });
+
+// Fetch Data
+(async () => {
+	const { name, pass } = thisUser;
+	if (name === 'null' || pass == 'null') return;
+
+	const dataList = ['bookmarks'];
+	const fetchData = await Promise.allSettled([
+		fetch(`${API_LINK}/bookmarks/list/${name}/${pass}`),
+	]);
+	fetchData
+		.filter((data) => data.status === 'fulfilled')
+		.map((item) => item.value.json())
+		.forEach(async (item, idx) => {
+			data[dataList[idx]] = await item;
+			// data[dataList[idx]].sort((a, b) => a.name > b.name);
+		});
+})();
 
 // Problemset Handle
 (() => {
@@ -366,8 +523,9 @@ toolItems.forEach((item, index) => {
 	problemsData?.problems || getProblemData();
 
 	const problemsetAllContent = select(problemsetContainer, '.all-content');
-
 	const searchBtn = select(problemsetContainer, '.search-container .submit');
+	const randomBtn = select(problemsetContainer, '.search-container .random');
+
 	searchBtn.onclick = (e) => {
 		e.preventDefault();
 
@@ -380,7 +538,6 @@ toolItems.forEach((item, index) => {
 			problemsetAllContent.innerHTML += `<button class="load-more" onclick="loadEvent(event)">Load More</button>`;
 	};
 
-	const randomBtn = select(problemsetContainer, '.search-container .random');
 	randomBtn.onclick = (e) => {
 		e.preventDefault();
 
@@ -389,7 +546,6 @@ toolItems.forEach((item, index) => {
 		let randNum = Math.round(Math.random() * listSize);
 
 		let newListHTMLS = getListHTMLS([newList[randNum]], 0, 1);
-
 		problemsetAllContent.innerHTML = newListHTMLS;
 	};
 
@@ -463,7 +619,7 @@ toolItems.forEach((item, index) => {
 	};
 
 	(async () => {
-		const response = await fetch(CONTEST_API);
+		const response = await fetch(CF_API.contest);
 		const data = await response.json();
 		renderContest(
 			currentContent,
@@ -559,7 +715,7 @@ toolItems.forEach((item, index) => {
 
 		(async () => {
 			const value = handleSearch.value.trim();
-			const response = await fetch(`${USER_INFO_API}${value}`);
+			const response = await fetch(`${CF_API.user_info}${value}`);
 			const data = await response.json();
 			renderUserInfo(data.result);
 		})();
@@ -606,7 +762,7 @@ toolItems.forEach((item, index) => {
 
 		(async () => {
 			const value = ratingHandleSearch.value.trim();
-			const response = await fetch(`${USER_RATING_API}${value}`);
+			const response = await fetch(`${CF_API.user_rating}${value}`);
 			const data = await response.json();
 			renderUserInfo(data.result?.reverse());
 		})();
@@ -630,7 +786,7 @@ toolItems.forEach((item, index) => {
 		(async () => {
 			const value = searchBar.value.trim();
 			const response = await fetch(
-				`${USER_STATUS_API}${value}&from=1&count=10`
+				`${CF_API.user_status}${value}&from=1&count=10`
 			);
 			const data = await response.json();
 			stalkRender(data.result);
@@ -643,18 +799,33 @@ toolItems.forEach((item, index) => {
 
 // Bookmarks Handle
 (() => {
-	bookmarksContainer.innerHTML = `<div class="header"><span>Bookmarks</span></div>
-								<div class="bmarkTools">
-									<button class="clearBmarkBtn">Clear</button>
-								</div>
-								<div class="all-content"></div>`;
+	bookmarksContainer.innerHTML = `
+	<div class="header"><span>Bookmarks</span></div>
+	<div class="bmarkTools">
+		<button class="clearBmarkBtn">Clear</button>
+	</div>
+	<div class="all-content"></div>`;
+
 	$('.clearBmarkBtn').onclick = () => {
-		bookmarksContainer.querySelector('.all-content').innerHTML = '';
-		selectAll(document, '.bmContainer').forEach((item) =>
-			item.classList.remove('fill')
-		);
-		localStorage.removeItem('bookmarks');
-		bmarkData.length = 0;
+		confirm('Delete all bookmarks ?');
+
+		const removeBookmarks = () => {
+			bookmarksContainer.querySelector('.all-content').innerHTML = '';
+			selectAll(document, '.bmContainer').forEach((item) =>
+				item.classList.remove('fill')
+			);
+			storageData.del(localStorage, 'bookmarks');
+			bmarkData.length = 0;
+		};
+
+		const { name, pass } = thisUser;
+		if (name !== 'null' && pass !== 'null') {
+			fetch(`${API_LINK}/bookmarks/clear/${name}/${pass}`)
+				.then(() => {
+					removeBookmarks();
+				})
+				.catch(console.error);
+		} else removeBookmarks();
 	};
 
 	if (bmarkData) bmarkRender();
@@ -820,4 +991,48 @@ toolItems.forEach((item, index) => {
 	const toolContainer = $('.tool-container');
 	const toolMenu = $('.tool-btn');
 	toolMenu.onclick = () => toolContainer.classList.toggle('active');
+})();
+
+// Profile Handle
+(() => {
+	const inputEvent = `onkeydown="inputAvoidSubmit(event)"`;
+
+	profileContainer.innerHTML = `
+	<div class="header">
+		<span>Log in</span>
+	</div>
+	<form class="log-in-container">
+		<input ${inputEvent} type="text" name="name" class="name" autocomplete="off" placeholder="User Name" />
+		<div class="pass-container">
+			<input
+				${inputEvent}
+				type="password" autocomplete="off"
+				name="pass" class="pass" id="pass"
+				placeholder="Password" />
+			<label for="pass" class="pass-mode">
+				<i class="bi bi-eye show"></i>
+				<i class="bi bi-eye-slash hide"></i>
+			</label>
+		</div>
+		<div class="err-msg">Check your account info</div>
+		<button type="submit">
+			<span> Log In </span>
+		</button>
+	</form>
+	<div class="account-container">
+		<span class="account-name">${thisUser.name}</span>
+		<span class="account-pass">${thisUser.pass}</span>
+	</div>`;
+
+	logInForm = profileContainer.querySelector('form');
+	logInPassInp = logInForm.querySelector('input[name="pass"]');
+	logInPassMode = $('.pass-mode');
+	errMsg = logInForm.querySelector(`.err-msg`);
+
+	logInForm.onsubmit = logInHandle;
+	logInPassMode.onclick = function () {
+		this.classList.toggle('show');
+		const isShow = this.className.includes('show');
+		logInPassInp.type = isShow ? 'text' : 'password';
+	};
 })();
