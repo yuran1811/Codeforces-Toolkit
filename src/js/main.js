@@ -11,12 +11,11 @@ const storageData = {
 	del: (_, key) => _.removeItem(key),
 };
 
+let isAuth = storageData.get(sessionStorage, 'isAuth') || 0;
 let thisUserId = storageData.get(sessionStorage, 'id') || 'null';
 let thisUserName = storageData.get(sessionStorage, 'name') || 'null';
 let thisUserPass = storageData.get(sessionStorage, 'pass') || 'null';
 let lastUpdateTime = storageData.get(localStorage, 'timeUpdate') || '';
-let problemsData = storageData.get(localStorage, 'problems') || {};
-let bmarkData = storageData.get(localStorage, 'bookmarks') || [];
 
 const PROBLEM_LINK = 'https://codeforces.com/problemset/problem/';
 const PB_CONTEST_LINK = ({ contestId, index }) =>
@@ -25,7 +24,7 @@ const SUBMIT_LINK = ({ contestId }) =>
 	`https://codeforces.com/contest/${contestId}/submit`;
 
 const CF_TOOLKIT_API = {
-	link: ``,
+	link: `https://cf-toolkit-api.herokuapp.com/api`,
 	test: `http://localhost:1811/api`,
 };
 const API_LINK = CF_TOOLKIT_API.test;
@@ -81,8 +80,23 @@ const problemStatusList = [
 	'FAILED',
 	'WRONG_ANSWER',
 ];
-const data = {
-	bookmarks: [],
+const API_DATA = {
+	problems: storageData.get(localStorage, 'problems') || {},
+	bookmarks: [...(storageData.get(localStorage, 'bookmarks') || [])]
+		.sort((a, b) => {
+			if (a.contestId === b.contestId) return a.index < b.index;
+			return a.contestId > b.contestId;
+		})
+		.map((_, idx, arr) => {
+			let i = idx;
+			while (
+				i + 1 < arr.length &&
+				_.contestId === arr[i + 1].contestId &&
+				_.index === arr[i + 1].index
+			)
+				i++;
+			arr.splice(idx, i - idx);
+		}),
 };
 const thisUser = {
 	name: thisUserName,
@@ -120,42 +134,48 @@ const cvertDate = (date) => {
 	return `${items.pop()} , ${items.shift()} - ${items.join(' | ')}`;
 };
 
+const getBmarkData = async ({ name, pass }) => {
+	const res = await fetch(`${API_LINK}/bookmarks/list/${name}/${pass}`);
+	const data = await res.json();
+	API_DATA.bookmarks = [...new Set([...API_DATA.bookmarks, ...data])];
+	bmarkRender();
+};
 const bmarkRender = () => {
 	const bookmarks = select(bookmarksContainer, '.all-content');
-	bookmarks.innerHTML = bmarkData
+	bookmarks.innerHTML = API_DATA.bookmarks
 		.map((item) => {
-			const pblemId = item.contestId + String(item.index.charCodeAt(0));
-			const pblemTags = item.tags.map((item) => item).join(', ');
+			const pblemId = '' + item?.contestId + item?.index.charCodeAt(0);
+			const pblemTags = item?.tags.map((item) => item).join(', ');
 			return `
 			<div
 				class="bmark-item"
-				data-id="${item.id}"
+				data-id="${'' + item?.contestId + item?.index.charCodeAt(0)}"
 				data-problemid="${pblemId}"
-				data-contestid="${item.contestId}"
-				data-name="${item.name}"
-				data-index="${item.index}"
+				data-contestid="${item?.contestId}"
+				data-name="${item?.name}"
+				data-index="${item?.index}"
 				data-rating="${item?.rating || 0}"
 				data-tags="${pblemTags}"
 			>
 				<i class="bi bi-x-circle" onclick="bmarkDelete(event)"></i>
-				${item.data}
+				${item?.data}
 			</div>`;
 		})
 		.join('');
-	storageData.set(localStorage, 'bookmarks', bmarkData);
+	storageData.set(localStorage, 'bookmarks', API_DATA.bookmarks);
 };
 const bmarkDelete = (e) => {
 	e.stopPropagation();
 	const bmItem = e.target.closest('.bmark-item');
 
 	// Remove from data
-	bmarkData.forEach((item, idx) => {
+	API_DATA.bookmarks.forEach((item, idx) => {
 		if (item.id !== bmItem.dataset.id) return;
 		const { contestId, index } = item;
 
 		confirm('Delete this bookmark ?');
 
-		bmarkData.splice(idx, 1);
+		API_DATA.bookmarks.splice(idx, 1);
 
 		const { name, pass } = thisUser;
 		if (name !== 'null' && pass !== 'null') {
@@ -182,6 +202,8 @@ const bmarksHandle = (e) => {
 	const pblemItem = thisItem.closest('.problem-item');
 	const data = {
 		contestId: +pblemItem.dataset.contestid,
+		data: pblemItem.innerHTML,
+		id: pblemItem.dataset.problemid,
 		index: pblemItem.dataset.index,
 		name: pblemItem.dataset.name,
 		rating: +pblemItem.dataset.rating,
@@ -190,12 +212,12 @@ const bmarksHandle = (e) => {
 
 	thisItem.classList.toggle('fill');
 	if (thisItem.className.includes('fill')) {
-		if (!bmarkData.some((_) => _.id === pblemItem.dataset.problemid)) {
-			bmarkData.push({
-				...data,
-				id: pblemItem.dataset.problemid,
-				data: pblemItem.innerHTML,
-			});
+		if (
+			!API_DATA.bookmarks.some(
+				(_) => _.id === pblemItem.dataset.problemid
+			)
+		) {
+			API_DATA.bookmarks.push(data);
 
 			const { name, pass } = thisUser;
 			if (name !== 'null' && pass !== 'null') {
@@ -212,12 +234,12 @@ const bmarksHandle = (e) => {
 			}
 		}
 	} else {
-		bmarkData.forEach((_, index) => {
+		API_DATA.bookmarks.forEach((_, index) => {
 			if (_.id === pblemItem.dataset.problemid) {
-				bmarkData.splice(index, 1);
+				API_DATA.bookmarks.splice(index, 1);
 
 				confirm('Delete this bookmark ?');
-				const { name, pass, id } = thisUser;
+				const { name, pass } = thisUser;
 				if (name && pass) {
 					fetch(
 						`${API_LINK}/bookmarks/del/${name}/${pass}/${data.contestId}/${data.index}`
@@ -240,9 +262,9 @@ const getProblemData = () => {
 		const data = await res.json();
 		const time = Date.now();
 
-		problemsData = data.result;
+		API_DATA.problems = data.result;
 
-		storageData.set(localStorage, 'problems', problemsData);
+		storageData.set(localStorage, 'problems', API_DATA.problems);
 		storageData.set(localStorage, 'timeUpdate', time);
 
 		$('.timeUpdate').innerHTML = 'Recently sync';
@@ -305,7 +327,7 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 			const pblemId = item.contestId + String(item.index.charCodeAt(0));
 			const pblemTags = item.tags.map((item) => item).join(', ');
 			const pblemRating = item?.rating || 'Unrated';
-			const pblemStatus = bmarkData.some((_) => _.id === pblemId)
+			const pblemStatus = API_DATA.bookmarks.some((_) => _.id === pblemId)
 				? 'fill'
 				: '';
 
@@ -380,8 +402,8 @@ const stalkRender = (data) => {
 						: user.verdict
 				}</span>
 			</div>
-			<div class="time" style="text-align: center">${new Date(
-				user.creationTimeSeconds * 1000
+			<div class="time" style="text-align: center">${cvertDate(
+				new Date(user.creationTimeSeconds * 1000).toString()
 			)}</div>
 		</div>`;
 	});
@@ -444,14 +466,17 @@ const logInHandle = async (e) => {
 		lastWrong = setTimeout(() => {
 			errMsg.classList.remove('isErr');
 		}, 3000);
+
 		thisUser.name = '';
 		thisUser.pass = '';
 		thisUser.id = '';
 	} else {
-		document.body.classList.add('isAuth');
+		profileContainer.classList.add('isAuth');
 		thisUser.name = name;
 		thisUser.pass = pass;
 		thisUser.id = id;
+
+		getBmarkData({ name, pass });
 	}
 
 	storageData.set(sessionStorage, 'id', id);
@@ -471,24 +496,6 @@ toolItems.forEach((item, index) => {
 		contents[index].style.display = 'flex';
 	};
 });
-
-// Fetch Data
-(async () => {
-	const { name, pass } = thisUser;
-	if (name === 'null' || pass == 'null') return;
-
-	const dataList = ['bookmarks'];
-	const fetchData = await Promise.allSettled([
-		fetch(`${API_LINK}/bookmarks/list/${name}/${pass}`),
-	]);
-	fetchData
-		.filter((data) => data.status === 'fulfilled')
-		.map((item) => item.value.json())
-		.forEach(async (item, idx) => {
-			data[dataList[idx]] = await item;
-			// data[dataList[idx]].sort((a, b) => a.name > b.name);
-		});
-})();
 
 // Problemset Handle
 (() => {
@@ -520,7 +527,7 @@ toolItems.forEach((item, index) => {
 		</form>
 		<div class="all-content"></div>`;
 
-	problemsData?.problems || getProblemData();
+	API_DATA.problems?.problems || getProblemData();
 
 	const problemsetAllContent = select(problemsetContainer, '.all-content');
 	const searchBtn = select(problemsetContainer, '.search-container .submit');
@@ -529,7 +536,7 @@ toolItems.forEach((item, index) => {
 	searchBtn.onclick = (e) => {
 		e.preventDefault();
 
-		newList = getList(problemsData.problems);
+		newList = getList(API_DATA.problems.problems);
 		newListSize = newList.length;
 		listCnt = newListSize <= 20 ? newListSize : 20;
 		problemsetAllContent.innerHTML = getListHTMLS(newList, 0, listCnt);
@@ -541,7 +548,7 @@ toolItems.forEach((item, index) => {
 	randomBtn.onclick = (e) => {
 		e.preventDefault();
 
-		let newList = getList(problemsData.problems);
+		let newList = getList(API_DATA.problems.problems);
 		let listSize = newList.length;
 		let randNum = Math.round(Math.random() * listSize);
 
@@ -815,7 +822,7 @@ toolItems.forEach((item, index) => {
 				item.classList.remove('fill')
 			);
 			storageData.del(localStorage, 'bookmarks');
-			bmarkData.length = 0;
+			API_DATA.bookmarks.length = 0;
 		};
 
 		const { name, pass } = thisUser;
@@ -828,7 +835,7 @@ toolItems.forEach((item, index) => {
 		} else removeBookmarks();
 	};
 
-	if (bmarkData) bmarkRender();
+	if (API_DATA.bookmarks) bmarkRender();
 })();
 
 // Extras Handle
@@ -997,9 +1004,15 @@ toolItems.forEach((item, index) => {
 (() => {
 	const inputEvent = `onkeydown="inputAvoidSubmit(event)"`;
 
+	if (isAuth) {
+		profileContainer.classList.add('isAuth');
+		getBmarkData({ name: thisUserName, pass: thisUserPass });
+	}
+
 	profileContainer.innerHTML = `
 	<div class="header">
-		<span>Log in</span>
+		<span class="log-in">Log in</span>
+		<span class="is-auth">Welcome</span>
 	</div>
 	<form class="log-in-container">
 		<input ${inputEvent} type="text" name="name" class="name" autocomplete="off" placeholder="User Name" />
@@ -1021,7 +1034,6 @@ toolItems.forEach((item, index) => {
 	</form>
 	<div class="account-container">
 		<span class="account-name">${thisUser.name}</span>
-		<span class="account-pass">${thisUser.pass}</span>
 	</div>`;
 
 	logInForm = profileContainer.querySelector('form');

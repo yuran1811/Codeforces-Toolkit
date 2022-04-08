@@ -43,3 +43,19 @@ output {
 	background-color: var(--background);
 	outline: none;
 }
+
+i[class~='bi'] {
+	color: var(--color);
+}
+i[class*='bi-arrow'],
+.newRate {
+	font-weight: 700;
+}
+i.bi-arrow-down-right,
+.newRate.down {
+	color: rgb(243, 63, 63);
+}
+i.bi-arrow-up-right,
+.newRate.up {
+	color: lightgreen;
+}
