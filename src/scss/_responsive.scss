@@ -1,70 +1,71 @@
 @media screen and (max-width: 950px) {
-	.tool-container {
-		--tool-width: 65px;
-		&.active .tool-item:hover,
-		.tool-item.active {
-			border-right: 0.5rem solid rgb(45, 233, 170);
-		}
-		.tool-item > span {
-			display: none;
-		}
-		.tool-brand {
-			display: none;
-		}
-		& + .main-container {
+	body {
+		.tool-container {
 			--tool-width: 65px;
-		}
-
-		.tool-btn,
-		.tool-btn:hover {
-			background-color: aquamarine !important;
-		}
-	}
-
-	.main-container {
-		.main-content {
-			padding: 1rem;
-			.header {
-				font-size: 3.6rem;
-				span::after {
-					height: 0.4rem;
-				}
+			&.active .tool-item:hover,
+			.tool-item.active {
+				border-right: 0.5rem solid rgb(45, 233, 170);
 			}
-
-			&.rating .all-content,
-			.all-content {
-				width: 100%;
-			}
-
-			.user-item .right {
-				text-align: right;
-			}
-
-			.contest-item .contestId,
-			.contest-item .rank,
-			.user-item .right .email {
+			.tool-item > span {
 				display: none;
 			}
+			.tool-brand {
+				display: none;
+			}
+			& + .main-container {
+				--tool-width: 65px;
+			}
 
-			.content-item__info,
-			.content-item__tags {
-				width: 60%;
+			.tool-btn,
+			.tool-btn:hover {
+				background-color: aquamarine !important;
 			}
 		}
-		.problemset {
-			input {
-				width: 60vw;
-				max-width: 60vw;
+		.main-container {
+			.main-content {
+				padding: 1rem;
+				.header {
+					font-size: 3.6rem;
+					span::after {
+						height: 0.4rem;
+					}
+				}
+
+				&.rating .all-content,
+				.all-content {
+					width: 100%;
+				}
+
+				.user-item .right {
+					text-align: right;
+				}
+
+				.contest-item .contestId,
+				.contest-item .rank,
+				.user-item .right .email {
+					display: none;
+				}
+
+				.content-item__info,
+				.content-item__tags {
+					width: 60%;
+				}
 			}
-			.all-btn {
-				flex-wrap: wrap;
+			.problemset {
+				input {
+					width: 60vw;
+					max-width: 60vw;
+				}
+				.all-btn {
+					flex-wrap: wrap;
+				}
+				.search-by-rating {
+					flex-direction: column;
+				}
 			}
-			.search-by-rating {
-				flex-direction: column;
+			.extras .all-content .calc-container .calc-simulator {
+				width: 80%;
 			}
-		}
-		.extras .all-content .calc-container .calc-simulator {
-			width: 80%;
 		}
 	}
 }

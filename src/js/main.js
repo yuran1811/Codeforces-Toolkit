@@ -5,6 +5,7 @@ const $$ = document.querySelectorAll.bind(document);
 const select = (par, child) => par.querySelector(child);
 const selectAll = (par, child) => par.querySelectorAll(child);
 
+// Storage Data
 const storageData = {
 	get: (_, key) => JSON.parse(_.getItem(key)),
 	set: (_, key, val) => _.setItem(key, JSON.stringify(val)),
@@ -17,17 +18,19 @@ let thisUserName = storageData.get(sessionStorage, 'name') || 'null';
 let thisUserPass = storageData.get(sessionStorage, 'pass') || 'null';
 let lastUpdateTime = storageData.get(localStorage, 'timeUpdate') || '';
 
-const PROBLEM_LINK = 'https://codeforces.com/problemset/problem/';
-const PB_CONTEST_LINK = ({ contestId, index }) =>
-	`https://codeforces.com/contest/${contestId}/problem/${index}`;
-const SUBMIT_LINK = ({ contestId }) =>
-	`https://codeforces.com/contest/${contestId}/submit`;
+// CF Link
+const PBLEM_LINK = 'https://codeforces.com/problemset/problem/';
+const PBLEM_SMIT = 'https://codeforces.com/contest';
+const GET_CTEST_LINK = ({ contestId, index }) =>
+	`${PBLEM_SMIT}/${contestId}/problem/${index}`;
+const GET_SMIT_LINK = ({ contestId }) => `${PBLEM_SMIT}/${contestId}/submit`;
 
+// API Link
 const CF_TOOLKIT_API = {
 	link: `https://cf-toolkit-api.herokuapp.com/api`,
 	test: `http://localhost:1811/api`,
 };
-const API_LINK = CF_TOOLKIT_API.test;
+const API_LINK = CF_TOOLKIT_API.link;
 
 const CF_API_LINK = `https://codeforces.com/api`;
 const CF_API = {
@@ -37,7 +40,11 @@ const CF_API = {
 	user_status: `${CF_API_LINK}/user.status?handle=`,
 	user_rating: `${CF_API_LINK}/user.rating?handle=`,
 };
-
+const API_DATA = {
+	problems: storageData.get(localStorage, 'problems') || {},
+	bookmarks: [...(storageData.get(localStorage, 'bookmarks') || [])],
+};
+// Problem Status
 const problemStatus = {
 	OK: {
 		color: '#00a92a',
@@ -80,32 +87,21 @@ const problemStatusList = [
 	'FAILED',
 	'WRONG_ANSWER',
 ];
-const API_DATA = {
-	problems: storageData.get(localStorage, 'problems') || {},
-	bookmarks: [...(storageData.get(localStorage, 'bookmarks') || [])]
-		.sort((a, b) => {
-			if (a.contestId === b.contestId) return a.index < b.index;
-			return a.contestId > b.contestId;
-		})
-		.map((_, idx, arr) => {
-			let i = idx;
-			while (
-				i + 1 < arr.length &&
-				_.contestId === arr[i + 1].contestId &&
-				_.index === arr[i + 1].index
-			)
-				i++;
-			arr.splice(idx, i - idx);
-		}),
-};
+
+// User Config
 const thisUser = {
 	name: thisUserName,
 	pass: thisUserPass,
 	id: thisUserId,
 };
 
+// Elements
 const bmNoFill = `<i class="bi bi-bookmarks"></i>`;
 const bmFill = `<i class="bi bi-bookmarks-fill"></i>`;
+const circleLoadingEle = `
+	<svg viewBox="25 25 50 50" class="circle-loading">
+		<circle cx="50" cy="50" r="20" class="circle-loading"></circle>
+	</svg>`;
 
 const loading = $('.loading');
 const toolItems = $$('.tool-item');
@@ -120,7 +116,10 @@ let logInForm;
 let logInPassInp;
 let logInPassMode;
 let errMsg;
+let accountName;
+let syncLocal;
 
+// Variables
 let listCnt = 0;
 let newList = [];
 let newListSize = 0;
@@ -134,16 +133,34 @@ const cvertDate = (date) => {
 	return `${items.pop()} , ${items.shift()} - ${items.join(' | ')}`;
 };
 
+const bmarksTrim = () => {
+	API_DATA.bookmarks
+		.sort((a, b) => {
+			if (a?.contestId === b?.contestId) return a?.index < b?.index;
+			return a?.contestId > b?.contestId;
+		})
+		.map((_, i, arr) => {
+			for (let j = i + 1; j < arr.length; j++)
+				if (
+					arr[j]?.contestId === _?.contestId &&
+					arr[j]?.index === _?.index
+				)
+					arr.splice(j, 1);
+		});
+};
 const getBmarkData = async ({ name, pass }) => {
 	const res = await fetch(`${API_LINK}/bookmarks/list/${name}/${pass}`);
 	const data = await res.json();
-	API_DATA.bookmarks = [...new Set([...API_DATA.bookmarks, ...data])];
+	API_DATA.bookmarks = [...API_DATA.bookmarks, ...data];
+	bmarksTrim();
 	bmarkRender();
 };
 const bmarkRender = () => {
 	const bookmarks = select(bookmarksContainer, '.all-content');
 	bookmarks.innerHTML = API_DATA.bookmarks
 		.map((item) => {
+			if (!item?.contestId) return;
+
 			const pblemId = '' + item?.contestId + item?.index.charCodeAt(0);
 			const pblemTags = item?.tags.map((item) => item).join(', ');
 			return `
@@ -173,7 +190,7 @@ const bmarkDelete = (e) => {
 		if (item.id !== bmItem.dataset.id) return;
 		const { contestId, index } = item;
 
-		confirm('Delete this bookmark ?');
+		if (!confirm('Delete this bookmark ?')) return;
 
 		API_DATA.bookmarks.splice(idx, 1);
 
@@ -183,7 +200,7 @@ const bmarkDelete = (e) => {
 				`${API_LINK}/bookmarks/del/${name}/${pass}/${contestId}/${index}`
 			)
 				.then(() => {
-					console.log('Success');
+					// console.log('Success');
 				})
 				.catch(console.error);
 		}
@@ -221,14 +238,14 @@ const bmarksHandle = (e) => {
 
 			const { name, pass } = thisUser;
 			if (name !== 'null' && pass !== 'null') {
-				console.log(data);
+				// console.log(data);
 				fetch(`${API_LINK}/bookmarks/add/${name}/${pass}`, {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify(data),
 				})
 					.then(() => {
-						console.log('Success');
+						// console.log('Success');
 					})
 					.catch(console.error);
 			}
@@ -238,14 +255,14 @@ const bmarksHandle = (e) => {
 			if (_.id === pblemItem.dataset.problemid) {
 				API_DATA.bookmarks.splice(index, 1);
 
-				confirm('Delete this bookmark ?');
+				if (!confirm('Delete this bookmark ?')) return;
 				const { name, pass } = thisUser;
 				if (name && pass) {
 					fetch(
 						`${API_LINK}/bookmarks/del/${name}/${pass}/${data.contestId}/${data.index}`
 					)
 						.then(() => {
-							console.log('Success');
+							// console.log('Success');
 						})
 						.catch(console.error);
 				}
@@ -253,6 +270,27 @@ const bmarksHandle = (e) => {
 		});
 	}
 	bmarkRender();
+};
+const bmarksSyncLocal = () => {
+	API_DATA.bookmarks = [
+		...API_DATA.bookmarks,
+		...storageData.get(localStorage, 'bookmarks'),
+	];
+	bmarksTrim();
+
+	const { name, pass } = thisUser;
+	if (name !== 'null' && pass !== 'null') {
+		fetch(`${API_LINK}/bookmarks/add/${name}/${pass}`, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify(API_DATA.bookmarks),
+		})
+			.then(() => {
+				// console.log(API_DATA.bookmarks);
+				// console.log('Success');
+			})
+			.catch(console.error);
+	}
 };
 
 const getProblemData = () => {
@@ -324,10 +362,12 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 	return list
 		.slice(from, to)
 		.map((item) => {
-			const pblemId = item.contestId + String(item.index.charCodeAt(0));
-			const pblemTags = item.tags.map((item) => item).join(', ');
+			const pblemId = item?.contestId + String(item?.index.charCodeAt(0));
+			const pblemTags = item?.tags.map((item) => item).join(', ');
 			const pblemRating = item?.rating || 'Unrated';
-			const pblemStatus = API_DATA.bookmarks.some((_) => _.id === pblemId)
+			const pblemStatus = API_DATA.bookmarks.some(
+				(_) => _?.id === pblemId
+			)
 				? 'fill'
 				: '';
 
@@ -335,9 +375,9 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 		<div
 			class="problem-item"
 			data-problemid="${pblemId}"
-			data-contestid="${item.contestId}"
-			data-name="${item.name}"
-			data-index="${item.index}"
+			data-contestid="${item?.contestId}"
+			data-name="${item?.name}"
+			data-index="${item?.index}"
 			data-rating="${item?.rating || 0}"
 			data-tags="${pblemTags}"
 		>
@@ -346,17 +386,17 @@ const getListHTMLS = (list, from = 0, to = 0) => {
 			</div>
 			<a
 				class="in-contest-link" target="_blank" rel="noopener"
-				href="${PB_CONTEST_LINK(item)}">
+				href="${GET_CTEST_LINK(item)}">
 				<i class="bi bi-box-arrow-in-up-right"></i>
 			</a>
 			<a
 				class="submit-link" target="_blank" rel="noopener"
-				href="${SUBMIT_LINK(item)}">
+				href="${GET_SMIT_LINK(item)}">
 				<i class="bi bi-code"></i>
 			</a>
 			<a
 				class="content-item" target="_blank" rel="noopener"
-				href="${PROBLEM_LINK}/${item.contestId}/${item.index}">
+				href="${PBLEM_LINK}/${item.contestId}/${item.index}">
 				<div class="content-item__info">
 					<span class="content-item__info-index">
 						${item.index + ' - '}
@@ -386,7 +426,7 @@ const stalkRender = (data) => {
 			<div class="problemDetail">
 				<a
 					class="problemName" target="_blank" rel="noopener"
-					href="${PB_CONTEST_LINK(user.problem)}"
+					href="${GET_CTEST_LINK(user.problem)}"
 				>${user.problem.name}</a>
 
 				<span class="problemRate">${user.problem?.rating || 'Unrated'}</span>
@@ -472,10 +512,10 @@ const logInHandle = async (e) => {
 		thisUser.id = '';
 	} else {
 		profileContainer.classList.add('isAuth');
+		accountName.innerHTML = name;
 		thisUser.name = name;
 		thisUser.pass = pass;
 		thisUser.id = id;
-
 		getBmarkData({ name, pass });
 	}
 
@@ -485,6 +525,7 @@ const logInHandle = async (e) => {
 	storageData.set(sessionStorage, 'pass', thisUser.pass);
 };
 
+// Tool Items Handle
 toolItems.forEach((item, index) => {
 	item.onclick = function () {
 		const lastToolActive = $('.tool-container .active');
@@ -500,32 +541,30 @@ toolItems.forEach((item, index) => {
 // Problemset Handle
 (() => {
 	problemsetContainer.innerHTML = `
-		<div class="header">
-			<span class="title">Problemset</span>
+	<div class="header">
+		<span class="title">Problemset</span>
+	</div>
+	<div class="timeUpdate">${
+		lastUpdateTime
+			? `Last update: ${cvertDate(new Date(lastUpdateTime).toString())}`
+			: 'Nothing changes'
+	}</div>
+	<form class="search-container">
+		<input placeholder="Search by name" type="text" id="nameSearch">
+		<input placeholder="Search by tags, split by space" type="text" id="tagSearch">
+		<div class="search-by-rating">
+			<input placeholder="Rating from" type="number" id="ratingFrom">
+			<input placeholder="Rating to" type="number" id="ratingTo">
 		</div>
-		<div class="timeUpdate">${
-			lastUpdateTime
-				? `Last update: ${cvertDate(
-						new Date(lastUpdateTime).toString()
-				  )}`
-				: 'Nothing changes'
-		}</div>
-		<form class="search-container">
-			<input placeholder="Search by name" type="text" id="nameSearch">
-			<input placeholder="Search by tags, split by space" type="text" id="tagSearch">
-			<div class="search-by-rating">
-				<input placeholder="Rating from" type="number" id="ratingFrom">
-				<input placeholder="Rating to" type="number" id="ratingTo">
-			</div>
-			<input placeholder="Contest ID" type="number" id="contestSearch">
-			<div class="all-btn">
-				<button class="submit">Search</button>
-				<button class="random">Random</button>
-				<button class="updateProblemBtn">Update</button>
-				<button class="tags-toggle">Hide Tags</button>
-			</div>
-		</form>
-		<div class="all-content"></div>`;
+		<input placeholder="Contest ID" type="number" id="contestSearch">
+		<div class="all-btn">
+			<button class="submit">Search</button>
+			<button class="random">Random</button>
+			<button class="updateProblemBtn">Update</button>
+			<button class="tags-toggle">Hide Tags</button>
+		</div>
+	</form>
+	<div class="all-content"></div>`;
 
 	API_DATA.problems?.problems || getProblemData();
 
@@ -542,7 +581,8 @@ toolItems.forEach((item, index) => {
 		problemsetAllContent.innerHTML = getListHTMLS(newList, 0, listCnt);
 
 		if (listCnt < newListSize)
-			problemsetAllContent.innerHTML += `<button class="load-more" onclick="loadEvent(event)">Load More</button>`;
+			problemsetAllContent.innerHTML += `
+			<button class="load-more" onclick="loadEvent(event)">Load More</button>`;
 	};
 
 	randomBtn.onclick = (e) => {
@@ -572,9 +612,10 @@ toolItems.forEach((item, index) => {
 // Contest Handle
 (() => {
 	const contestContainer = $('.main-content.contest');
-	contestContainer.innerHTML = `<div class="header"><span>Contest List</span></div>
-								<div class="all-content current"></div>
-								<div class="all-content finished"></div>`;
+	contestContainer.innerHTML = `
+	<div class="header"><span>Contest List</span></div>
+		<div class="all-content current"></div>
+	<div class="all-content finished"></div>`;
 
 	const currentContent = select(contestContainer, '.all-content.current');
 	const finishedContent = select(contestContainer, '.all-content.finished');
@@ -604,43 +645,46 @@ toolItems.forEach((item, index) => {
 
 			if (isFin)
 				container.innerHTML += `
-					<a
-							class="contestInfo-item" target="_blank" rel=”noopener”
-							href="https://codeforces.com/contest/${contest.id}"
-							>
-							<div class="name">${contest.name}</div>
-							<div class="length">${length}</div>
-							<div class="startTime">${`${startDate}, ${startTime}`}</div>
-					</a>`;
+				<a
+					class="contestInfo-item" target="_blank" rel=”noopener”
+					href="https://codeforces.com/contest/${contest.id}"
+				>
+					<div class="name">${contest.name}</div>
+					<div class="length">${length}</div>
+					<div class="startTime">${`${startDate}, ${startTime}`}</div>
+				</a>`;
 			else
 				container.innerHTML += `
-					<div
-							class="contestInfo-item" target="_blank" rel=”noopener”
-							href="https://codeforces.com/contest/${contest.id}"
-							>
-							<div class="name">${contest.name}</div>
-							<div class="length">${length}</div>
-							<div class="startTime">${`${startDate}, ${startTime}`}</div>
-					</div>`;
+				<div
+					class="contestInfo-item" target="_blank" rel=”noopener”
+					href="https://codeforces.com/contest/${contest.id}"
+				>
+					<div class="name">${contest.name}</div>
+					<div class="length">${length}</div>
+					<div class="startTime">${`${startDate}, ${startTime}`}</div>
+				</div>`;
 		});
 	};
 
-	(async () => {
-		const response = await fetch(CF_API.contest);
-		const data = await response.json();
-		renderContest(
-			currentContent,
-			data.result.filter((item) => item.phase === 'BEFORE'),
-			0
-		);
-		renderContest(
-			finishedContent,
-			data.result
-				.slice(0, 15)
-				.filter((item) => item.phase === 'FINISHED'),
-			1
-		);
-	})();
+	fetch(CF_API.contest)
+		.then((res) => res.json())
+		.then((data) => {
+			renderContest(
+				currentContent,
+				data.result.filter((item) => item.phase === 'BEFORE'),
+				0
+			);
+			renderContest(
+				finishedContent,
+				data.result
+					.slice(0, 15)
+					.filter((item) => item.phase === 'FINISHED'),
+				1
+			);
+		})
+		.catch(() => {
+			console.log('Contest ERR');
+		});
 })();
 
 // User Info Handle
@@ -659,9 +703,11 @@ toolItems.forEach((item, index) => {
 	};
 
 	const userContainer = $('.main-content.user');
-	userContainer.innerHTML = `<div class="header"><span>User Info</span></div>
-								<input placeholder="Search user by handle, split by ';'" type="text" id="handleSearch">
-								<div class="all-content"></div>`;
+	userContainer.innerHTML = `
+		<div class="header"><span>User Info</span></div>
+			<input placeholder="Search user by handle, split by ';'" type="text" id="handleSearch">
+			${circleLoadingEle}
+		<div class="all-content"></div>`;
 
 	const allUserContent = select(userContainer, '.all-content');
 	const renderUserInfo = (data) => {
@@ -669,50 +715,50 @@ toolItems.forEach((item, index) => {
 		data.forEach(
 			(user) =>
 				(allUserContent.innerHTML += `
-					<a
-						class="user-item" target="_blank" rel=”noopener”
-						href="https://codeforces.com/profile/${user.handle}"
-						>
-						<div class="left">
-							<figure>
-								<figcaption>
-									<div class="rating-status">
-										<span
-											style="color: ${rankColor[user.maxRank]}"
-											class="rank">${user.maxRank + ', '}
-										</span>
-										<span
-											style="color: ${rankColor[user.maxRank]}"
-											class="rating">${user.maxRating}
-										</span>
-									</div>
-								</figcaption>
-								<img src="${user.titlePhoto}" alt="${user.handle}">
-							</figure>
+				<a
+					class="user-item" target="_blank" rel=”noopener”
+					href="https://codeforces.com/profile/${user.handle}"
+				>
+					<div class="left">
+						<figure>
+							<figcaption>
+								<div class="rating-status">
+									<span
+										style="color: ${rankColor[user.maxRank]}"
+										class="rank">${user.maxRank + ', '}
+									</span>
+									<span
+										style="color: ${rankColor[user.maxRank]}"
+										class="rating">${user.maxRating}
+									</span>
+								</div>
+							</figcaption>
+							<img src="${user.titlePhoto}" alt="${user.handle}">
+						</figure>
+					</div>
+					<div class="right">
+						<div class="rating-status">
+							<span
+								style="color: ${rankColor[user.rank]}"
+								class="rank">
+								${user.rank + ', '}
+							</span>
+							<span
+								style="color: ${rankColor[user.rank]}"
+								class="rating">${user.rating}
+							</span>
 						</div>
-						<div class="right">
-							<div class="rating-status">
-								<span
-									style="color: ${rankColor[user.rank]}"
-									class="rank">
-									${user.rank + ', '}
-								</span>
-								<span
-									style="color: ${rankColor[user.rank]}"
-									class="rating">${user.rating}
-								</span>
-							</div>
-							${
-								user.email
-									? `
-										<div class="email">
-											<span>Email: </span>${user.email}
-										</div>`
-									: ''
-							}
-							<div class="friends">Friend of <b>${user.friendOfCount}</b> users</div>
-						</div>
-					</a>`)
+						${
+							user.email
+								? `
+									<div class="email">
+										<span>Email: </span>${user.email}
+									</div>`
+								: ''
+						}
+						<div class="friends">Friend of <b>${user.friendOfCount}</b> users</div>
+					</div>
+				</a>`)
 		);
 	};
 
@@ -732,9 +778,11 @@ toolItems.forEach((item, index) => {
 // User Rating Handle
 (() => {
 	const userRating = $('.main-content.rating');
-	userRating.innerHTML = `<div class="header"><span>User Rating</span></div>
-							<input placeholder="Show user's rating by handle" type="text" id="ratingHandleSearch">
-							<div class="all-content"></div>`;
+	userRating.innerHTML = `
+	<div class="header"><span>User Rating</span></div>
+		<input placeholder="Show user's rating by handle" type="text" id="ratingHandleSearch">
+		${circleLoadingEle}
+	<div class="all-content"></div>`;
 
 	const ratingContent = select(userRating, '.all-content');
 	const renderUserInfo = (data) => {
@@ -742,24 +790,24 @@ toolItems.forEach((item, index) => {
 		data.forEach(
 			(contest) =>
 				(ratingContent.innerHTML += `
-					<div class="contest-item">
-						<span class="contestId">#${contest.contestId}</span>
-						<span class="contestName">${contest.contestName}</span>
-						<span class="rank">No.${contest.rank}</span>
-						<div class="ratingChange">
-							<span>${contest.oldRating}</span>
-							${
-								contest.oldRating < contest.newRating
-									? `<i class="bi bi-arrow-up-right"></i>`
-									: `<i class="bi bi-arrow-down-right"></i>`
-							}
-							<span class="newRate ${
-								contest.oldRating < contest.newRating
-									? 'up'
-									: 'down'
-							}">${contest.newRating}</span>
-						</div>
-					</div>`)
+				<div class="contest-item">
+					<span class="contestId">#${contest.contestId}</span>
+					<span class="contestName">${contest.contestName}</span>
+					<span class="rank">No.${contest.rank}</span>
+					<div class="ratingChange">
+						<span>${contest.oldRating}</span>
+						${
+							contest.oldRating < contest.newRating
+								? `<i class="bi bi-arrow-up-right"></i>`
+								: `<i class="bi bi-arrow-down-right"></i>`
+						}
+						<span class="newRate ${
+							contest.oldRating < contest.newRating
+								? 'up'
+								: 'down'
+						}">${contest.newRating}</span>
+					</div>
+				</div>`)
 		);
 	};
 
@@ -778,12 +826,14 @@ toolItems.forEach((item, index) => {
 
 // User Stalking Handle
 (() => {
-	stalkingContainer.innerHTML = `<div class="header"><span>Stalking Mode</span></div>
-								<div class="stalkTools">
-									<input placeholder="Search user by handle" type="text" id="stalkHandle">
-									<button class="clearStalkBtn">Clear</button>
-								</div>
-								<div class="all-content"></div>`;
+	stalkingContainer.innerHTML = `
+	<div class="header"><span>Stalking Mode</span></div>
+	<div class="stalkTools">
+		<input placeholder="Search user by handle" type="text" id="stalkHandle">
+		<button class="clearStalkBtn">Clear</button>
+		${circleLoadingEle}
+	</div>
+	<div class="all-content"></div>`;
 
 	stalkingContent = select(stalkingContainer, '.all-content');
 	const searchBar = $('#stalkHandle');
@@ -797,7 +847,8 @@ toolItems.forEach((item, index) => {
 			);
 			const data = await response.json();
 			stalkRender(data.result);
-			stalkingContent.innerHTML += `<button class="load-more" onclick="stalkLoadEvent(event)">Load More</button>`;
+			stalkingContent.innerHTML += `
+			<button class="load-more" onclick="stalkLoadEvent(event)">Load More</button>`;
 		})();
 	};
 
@@ -814,7 +865,7 @@ toolItems.forEach((item, index) => {
 	<div class="all-content"></div>`;
 
 	$('.clearBmarkBtn').onclick = () => {
-		confirm('Delete all bookmarks ?');
+		if (!confirm('Delete all bookmarks ?')) return;
 
 		const removeBookmarks = () => {
 			bookmarksContainer.querySelector('.all-content').innerHTML = '';
@@ -841,48 +892,41 @@ toolItems.forEach((item, index) => {
 // Extras Handle
 (() => {
 	extrasContainer.innerHTML = `
-		<div class="header"><span>Extras</span></div>
-		<div class="all-content">
-			<div class="extra-container theme-container">
-				<div class="extra-btn themeBtn">
-					<i class="bi bi-palette"></i>
-				</div>
-				<div class="extra theme-select"></div>
+	<div class="header"><span>Extras</span></div>
+	<div class="all-content">
+		<div class="extra-container theme-container">
+			<div class="extra-btn themeBtn">
+				<i class="bi bi-palette"></i>
 			</div>
+			<div class="extra theme-select"></div>
+		</div>
 
-			<div class="extra-container calc-container">
-				<div class="extra-btn calcBtn">
-					<i class="bi bi-calculator"></i>
-				</div>
-				<form class="extra calc-simulator">
-					<input
-						type="text"
-						id="inp-num"
-						placeholder="Num list input - split by a comma"
-					/>
-					<input
-						type="text"
-						id="inp-operator"
-						placeholder="Operator input - split by a comma"
-					/>
-					<div id="out-res"></div>
-				</form>
+		<div class="extra-container calc-container">
+			<div class="extra-btn calcBtn">
+				<i class="bi bi-calculator"></i>
 			</div>
+			<form class="extra calc-simulator">
+				<input type="text" id="inp-num"
+					placeholder="Num list input - split by a comma"
+				/>
+				<input type="text" id="inp-operator"
+					placeholder="Operator input - split by a comma"
+				/>
+				<div id="out-res"></div>
+			</form>
+		</div>
 
-			<div class="extra-container graph-container">
-				<a
-					href="./graphEditor.html"
-					target="_blank"
-					rel="noopener"
-					class="extra-btn graphBtn"
-				>
-					<i class="bi bi-activity"></i>
-					<span> Graph Editor (click here to open in the new tab)</span>
-				</a>
+		<div class="extra-container graph-container">
+			<a
+				class="extra-btn graphBtn" target="_blank" rel="noopener"
+				href="./graphEditor.html">
+				<i class="bi bi-activity"></i>
+				<span> Graph Editor (click here to open in the new tab)</span>
+			</a>
 
-				<iframe src="./graphEditor.html" width="100%" height="${innerHeight}"></iframe>
-			</div>
-		</div>`;
+			<iframe src="./graphEditor.html" width="100%" height="${innerHeight}"></iframe>
+		</div>
+	</div>`;
 
 	const disableExtrasActive = () => {
 		const allExtraActive = $$('div.extra-btn');
@@ -893,7 +937,6 @@ toolItems.forEach((item, index) => {
 	// 	$$('div.extra-btn').forEach((item) => {
 	// 		item.addEventListener('click', (e) => {
 	// 			e.stopPropagation();
-
 	// 			const lastStatus = item.className.includes('active');
 	// 			disableExtrasActive();
 	// 			item.classList.toggle('active', !lastStatus);
@@ -908,8 +951,8 @@ toolItems.forEach((item, index) => {
 
 		$('.theme-select').innerHTML = themeList
 			.map(
-				(item) =>
-					`<div
+				(item) => `
+				<div
 					class="theme-item"
 					data-theme="${item.name}"
 					style="background-color:${item.color}">
@@ -1034,12 +1077,15 @@ toolItems.forEach((item, index) => {
 	</form>
 	<div class="account-container">
 		<span class="account-name">${thisUser.name}</span>
+		<button class="sync-local">Sync local bookmarks</button>
 	</div>`;
 
-	logInForm = profileContainer.querySelector('form');
-	logInPassInp = logInForm.querySelector('input[name="pass"]');
-	logInPassMode = $('.pass-mode');
-	errMsg = logInForm.querySelector(`.err-msg`);
+	logInForm = select(profileContainer, 'form');
+	logInPassInp = select(logInForm, 'input[name="pass"]');
+	logInPassMode = select(logInForm, '.pass-mode');
+	errMsg = select(logInForm, '.err-msg');
+	accountName = select(profileContainer, 'span.account-name');
+	syncLocal = select(profileContainer, 'button.sync-local');
 
 	logInForm.onsubmit = logInHandle;
 	logInPassMode.onclick = function () {
@@ -1047,4 +1093,5 @@ toolItems.forEach((item, index) => {
 		const isShow = this.className.includes('show');
 		logInPassInp.type = isShow ? 'text' : 'password';
 	};
+	syncLocal.onclick = bmarksSyncLocal;
 })();
