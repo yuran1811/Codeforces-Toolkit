@@ -571,6 +571,7 @@ body {
 				height: 28rem;
 
 				.calc-simulator {
+					border: 0.2rem solid var(--color);
 					left: 7rem;
 					width: 90%;
 					height: 25rem;
@@ -818,7 +819,6 @@ body {
 				}
 				.sync-local {
 					font-size: 2.3rem;
-
 				}
 			}
 		}
@@ -828,6 +828,10 @@ body {
 		width: 3.75em;
 		transform-origin: center;
 		animation: rotate 2s linear infinite;
+		display: block;
+		&.hide {
+			display: none;
+		}
 	}
 	circle.circle-loading {
 		fill: none;
@@ -839,11 +843,6 @@ body {
 		stroke-dashoffset: 0;
 		stroke-linecap: round;
 		animation: dash 1.5s ease-in-out infinite;
-		display: block;
-
-		&.hide {
-			display: none;
-		}
 	}
 }
 

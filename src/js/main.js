@@ -99,7 +99,7 @@ const thisUser = {
 const bmNoFill = `<i class="bi bi-bookmarks"></i>`;
 const bmFill = `<i class="bi bi-bookmarks-fill"></i>`;
 const circleLoadingEle = `
-	<svg viewBox="25 25 50 50" class="circle-loading">
+	<svg viewBox="25 25 50 50" class="circle-loading hide">
 		<circle cx="50" cy="50" r="20" class="circle-loading"></circle>
 	</svg>`;
 
@@ -704,10 +704,10 @@ toolItems.forEach((item, index) => {
 
 	const userContainer = $('.main-content.user');
 	userContainer.innerHTML = `
-		<div class="header"><span>User Info</span></div>
-			<input placeholder="Search user by handle, split by ';'" type="text" id="handleSearch">
-			${circleLoadingEle}
-		<div class="all-content"></div>`;
+	<div class="header"><span>User Info</span></div>
+		<input placeholder="Search user by handle, split by ';'" type="text" id="handleSearch">
+		${circleLoadingEle}
+	<div class="all-content"></div>`;
 
 	const allUserContent = select(userContainer, '.all-content');
 	const renderUserInfo = (data) => {
@@ -768,8 +768,14 @@ toolItems.forEach((item, index) => {
 
 		(async () => {
 			const value = handleSearch.value.trim();
+			const loadingSVG =
+				userContainer.querySelector('svg.circle-loading');
+
+			loadingSVG.classList.remove('hide');
 			const response = await fetch(`${CF_API.user_info}${value}`);
 			const data = await response.json();
+			loadingSVG.classList.add('hide');
+
 			renderUserInfo(data.result);
 		})();
 	};
@@ -817,8 +823,12 @@ toolItems.forEach((item, index) => {
 
 		(async () => {
 			const value = ratingHandleSearch.value.trim();
+			const loadingSVG = userRating.querySelector('svg.circle-loading');
+
+			loadingSVG.classList.remove('hide');
 			const response = await fetch(`${CF_API.user_rating}${value}`);
 			const data = await response.json();
+			loadingSVG.classList.add('hide');
 			renderUserInfo(data.result?.reverse());
 		})();
 	};
@@ -842,10 +852,15 @@ toolItems.forEach((item, index) => {
 
 		(async () => {
 			const value = searchBar.value.trim();
+			const loadingSVG =
+				stalkingContainer.querySelector('svg.circle-loading');
+
+			loadingSVG.classList.remove('hide');
 			const response = await fetch(
 				`${CF_API.user_status}${value}&from=1&count=10`
 			);
 			const data = await response.json();
+			loadingSVG.classList.add('hide');
 			stalkRender(data.result);
 			stalkingContent.innerHTML += `
 			<button class="load-more" onclick="stalkLoadEvent(event)">Load More</button>`;
