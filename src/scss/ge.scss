@@ -7,9 +7,9 @@ $text-size: 2rem;
 	font-size: 62.5%;
 	padding: 0;
 	margin: 0;
-}
-*::-webkit-scrollbar {
-	width: 0;
+	&::-webkit-scrollbar {
+		width: 0;
+	}
 }
 body {
 	overflow: hidden;
@@ -111,6 +111,7 @@ body {
 	outline: 0;
 	z-index: 9;
 	background-color: rgba(255, 255, 255, 0.9);
+	border: 0.7rem solid black;
 	&.active {
 		display: block;
 	}

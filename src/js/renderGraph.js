@@ -62,6 +62,12 @@
 					tooltip: 0,
 				},
 				{
+					name: 'Hide edge weight',
+					input: 'checkbox',
+					value: '',
+					tooltip: 0,
+				},
+				{
 					name: 'Copy node weight',
 					input: 'checkbox',
 					value: '',

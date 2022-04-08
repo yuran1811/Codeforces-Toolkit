@@ -12,6 +12,7 @@ const addNodeBtn = document.querySelector('.add-btn');
 const copyDataBtn = document.querySelector('.copy-btn');
 const showDirect = document.querySelector('.show-direct');
 const showNodeWeight = document.querySelector('.show-node-weight');
+const hideEdgeWeight = document.querySelector('.hide-edge-weight');
 const copyNodeWeight = document.querySelector('.copy-node-weight');
 const inpGr = document.querySelector('.input-group');
 const canvas = document.querySelector('#app');
@@ -277,6 +278,8 @@ const drawNodeValue = (item) => {
 	c.closePath();
 };
 const drawEdgeWeight = (a, b, { curve = 0, cp }) => {
+	if (hideEdgeWeight.checked) return;
+
 	const newList = a.listAdjTo.map((item) => item.item.value);
 	const idx = newList.indexOf(b.value);
 	const weight = a.listAdjTo[idx].weight;
@@ -564,6 +567,7 @@ const addHandle = () => {
 addNodeBtn.onclick = addHandle;
 showDirect.oninput = () => update();
 showNodeWeight.oninput = () => update();
+hideEdgeWeight.oninput = () => update();
 
 onresize = () => {
 	canvas.width = innerWidth;
