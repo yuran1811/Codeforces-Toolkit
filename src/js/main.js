@@ -16,6 +16,7 @@ let isAuth = storageData.get(sessionStorage, 'isAuth') || 0;
 let thisUserId = storageData.get(sessionStorage, 'id') || 'null';
 let thisUserName = storageData.get(sessionStorage, 'name') || 'null';
 let thisUserPass = storageData.get(sessionStorage, 'pass') || 'null';
+let thisUserHandle = storageData.get(sessionStorage, 'handle') || '';
 let lastUpdateTime = storageData.get(localStorage, 'timeUpdate') || '';
 
 // CF Link
@@ -93,15 +94,16 @@ const thisUser = {
 	name: thisUserName,
 	pass: thisUserPass,
 	id: thisUserId,
+	handle: thisUserHandle,
 };
 
 // Elements
 const bmNoFill = `<i class="bi bi-bookmarks"></i>`;
 const bmFill = `<i class="bi bi-bookmarks-fill"></i>`;
 const circleLoadingEle = `
-	<svg viewBox="25 25 50 50" class="circle-loading hide">
-		<circle cx="50" cy="50" r="20" class="circle-loading"></circle>
-	</svg>`;
+<svg viewBox="25 25 50 50" class="circle-loading hide">
+	<circle cx="50" cy="50" r="20" class="circle-loading"></circle>
+</svg>`;
 
 const loading = $('.loading');
 const toolItems = $$('.tool-item');
@@ -115,8 +117,10 @@ const profileContainer = $('.main-content.profile');
 let logInForm;
 let logInPassInp;
 let logInPassMode;
+let logInBtn;
 let errMsg;
 let accountName;
+let accountHandle;
 let syncLocal;
 
 // Variables
@@ -271,7 +275,7 @@ const bmarksHandle = (e) => {
 	}
 	bmarkRender();
 };
-const bmarksSyncLocal = () => {
+const bmarksSyncLocal = (e) => {
 	API_DATA.bookmarks = [
 		...API_DATA.bookmarks,
 		...storageData.get(localStorage, 'bookmarks'),
@@ -280,21 +284,44 @@ const bmarksSyncLocal = () => {
 
 	const { name, pass } = thisUser;
 	if (name !== 'null' && pass !== 'null') {
+		const accContainer = e.target.closest('.account-container');
+		const loading = accContainer.querySelector('svg.circle-loading');
+
+		loading?.classList.remove('hide');
+		e.target.disabled = true;
+
 		fetch(`${API_LINK}/bookmarks/add/${name}/${pass}`, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json' },
 			body: JSON.stringify(API_DATA.bookmarks),
 		})
 			.then(() => {
-				// console.log(API_DATA.bookmarks);
-				// console.log('Success');
+				loading?.classList.add('hide');
+				e.target.classList.add('success');
+				setTimeout(() => {
+					e.target.disabled = false;
+					e.target.classList.remove('success');
+				}, 1200);
 			})
-			.catch(console.error);
+			.catch((err) => {
+				console.error(err);
+
+				loading?.classList.add('hide');
+				e.target.classList.add('fail');
+				setTimeout(() => {
+					e.target.disabled = false;
+					e.target.classList.remove('fail');
+				}, 1200);
+			});
 	}
 };
 
 const getProblemData = () => {
+	const problemsetAllContent = select(problemsetContainer, '.all-content');
+	problemsetAllContent.innerHTML = '';
+
 	$('.timeUpdate').innerHTML = 'Syncing . . .';
+
 	(async () => {
 		const res = await fetch(CF_API.problem);
 		const data = await res.json();
@@ -311,7 +338,7 @@ const getProblemData = () => {
 				($('.timeUpdate').innerHTML = cvertDate(
 					new Date(time).toString()
 				)),
-			1200
+			1500
 		);
 	})();
 };
@@ -495,9 +522,13 @@ const logInHandle = async (e) => {
 	if (!name || !pass) return;
 
 	loading.classList.add('active');
+	logInBtn.disabled = true;
+
 	const res = await fetch(`${API_LINK}/users/auth/${name}/${pass}`);
-	const { auth, id } = await res.json();
+	const { auth, id, handle } = await res.json();
+
 	loading.classList.remove('active');
+	logInBtn.disabled = false;
 
 	let lastWrong;
 	if (!auth) {
@@ -510,12 +541,16 @@ const logInHandle = async (e) => {
 		thisUser.name = '';
 		thisUser.pass = '';
 		thisUser.id = '';
+		thisUser.handle = '';
 	} else {
 		profileContainer.classList.add('isAuth');
 		accountName.innerHTML = name;
+		accountHandle.innerHTML = handle;
+
 		thisUser.name = name;
 		thisUser.pass = pass;
 		thisUser.id = id;
+		thisUser.handle = handle;
 		getBmarkData({ name, pass });
 	}
 
@@ -523,6 +558,39 @@ const logInHandle = async (e) => {
 	storageData.set(sessionStorage, 'isAuth', auth);
 	storageData.set(sessionStorage, 'name', thisUser.name);
 	storageData.set(sessionStorage, 'pass', thisUser.pass);
+	storageData.set(sessionStorage, 'handle', thisUser.handle);
+};
+const userHandleEdit = ({ target }) => {
+	const handleValue = $('.account-handle-name').value.trim();
+	if (!handleValue) return;
+
+	target.disabled = true;
+	fetch(
+		`${API_LINK}/users/edit/${thisUser.id}/${thisUser.name}/${thisUser.pass}?_method=PUT`,
+		{
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ handle: handleValue }),
+		}
+	)
+		.then(() => {
+			target.classList.add('success');
+			setTimeout(() => {
+				target.disabled = false;
+				target.classList.remove('success');
+			}, 1200);
+
+			storageData.set(sessionStorage, 'handle', handleValue);
+		})
+		.catch((err) => {
+			console.error(err);
+
+			target.classList.add('fail');
+			setTimeout(() => {
+				target.disable = false;
+				target.classList.remove('fail');
+			}, 1200);
+		});
 };
 
 // Tool Items Handle
@@ -1092,14 +1160,21 @@ toolItems.forEach((item, index) => {
 	</form>
 	<div class="account-container">
 		<span class="account-name">${thisUser.name}</span>
+		<div class="account-handle-container">
+			<input class="account-handle-name" value="${thisUser.handle}"/>
+			<button onclick="userHandleEdit(event)">Edit</button>
+		</div>
 		<button class="sync-local">Sync local bookmarks</button>
+		${circleLoadingEle}
 	</div>`;
 
 	logInForm = select(profileContainer, 'form');
 	logInPassInp = select(logInForm, 'input[name="pass"]');
 	logInPassMode = select(logInForm, '.pass-mode');
+	logInBtn = select(logInForm, 'button');
 	errMsg = select(logInForm, '.err-msg');
 	accountName = select(profileContainer, 'span.account-name');
+	accountHandle = select(profileContainer, '.account-handle-name');
 	syncLocal = select(profileContainer, 'button.sync-local');
 
 	logInForm.onsubmit = logInHandle;

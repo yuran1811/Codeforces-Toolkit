@@ -646,6 +646,15 @@ body {
 		&:hover {
 			transform: scale(1.1);
 		}
+
+		&.fail {
+			background-color: rgb(245, 80, 80);
+			color: white;
+		}
+		&.success {
+			background-color: rgb(6, 136, 84);
+			color: rgb(215, 249, 148);
+		}
 	}
 	.load-more {
 		border: none;
@@ -817,6 +826,14 @@ body {
 					padding: 0.5rem;
 					margin: 0.5rem;
 				}
+				.account-handle-container {
+					display: flex;
+					align-items: center;
+					justify-content: center;
+					* {
+						font-size: 2.3rem;
+					}
+				}
 				.sync-local {
 					font-size: 2.3rem;
 				}
@@ -825,10 +842,12 @@ body {
 	}
 
 	svg.circle-loading {
-		width: 3.75em;
-		transform-origin: center;
-		animation: rotate 2s linear infinite;
+		position: relative;
+		margin: auto;
 		display: block;
+		width: 4.2rem;
+		animation: rotate 2s linear infinite;
+		transform-origin: center;
 		&.hide {
 			display: none;
 		}
@@ -836,12 +855,12 @@ body {
 	circle.circle-loading {
 		fill: none;
 		stroke: #fc2f70;
-		background: transparent;
 		color: transparent;
-		stroke-width: 5;
-		stroke-dasharray: 1, 200;
-		stroke-dashoffset: 0;
+		background: transparent;
 		stroke-linecap: round;
+		stroke-width: 5;
+		stroke-dashoffset: 0;
+		stroke-dasharray: 1, 200;
 		animation: dash 1.5s ease-in-out infinite;
 	}
 }
