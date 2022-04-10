@@ -545,7 +545,7 @@ const logInHandle = async (e) => {
 	} else {
 		profileContainer.classList.add('isAuth');
 		accountName.innerHTML = name;
-		accountHandle.innerHTML = handle;
+		accountHandle.value = handle;
 
 		thisUser.name = name;
 		thisUser.pass = pass;
