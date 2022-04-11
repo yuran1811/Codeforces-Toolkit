@@ -415,7 +415,7 @@ body {
 						z-index: inherit;
 					}
 
-					@include Responsive($SS) {
+					@include Responsive($SM) {
 						top: 4rem;
 						left: 4rem;
 					}
@@ -435,16 +435,19 @@ body {
 					font-weight: bold;
 				}
 				.contestName {
+					text-align: center;
 					text-overflow: ellipsis;
 					white-space: nowrap;
 					overflow: hidden;
 					width: 100%;
 					@include Responsive($SM) {
+						text-align: left;
 						width: 40rem;
 					}
 				}
 				.rank {
 					text-decoration: underline;
+					padding: 0 1.3rem;
 				}
 
 				@include Responsive($SM) {
@@ -473,6 +476,7 @@ body {
 				$length-width: 8rem;
 				$time-width: 30%;
 				.name {
+					text-align: center;
 					word-break: break-word;
 					padding: 0 0.5rem;
 					width: 100%;
@@ -482,6 +486,7 @@ body {
 					-webkit-line-clamp: 1;
 					-webkit-box-orient: vertical;
 					@include Responsive($SM) {
+						text-align: left;
 						width: calc(100% - #{$length-width} - #{$time-width});
 						-webkit-line-clamp: 4;
 					}
@@ -739,7 +744,7 @@ body {
 					border: 2px solid var(--color);
 					width: 100%;
 					margin-bottom: 1rem;
-					@include Responsive(MD) {
+					@include Responsive($MD) {
 						width: auto;
 						margin: 0;
 					}
