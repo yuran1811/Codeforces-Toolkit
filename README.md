@@ -8,8 +8,9 @@
 -   Search user's rating by handle
 -   Search user's status (problems solved) by handle
 -   Search problemset follow options
--   Bookmark the problems
+-   Bookmark the problems and save them
 -   See current or upcoming + finished contests
+-   Draw the graph with vertexes and edges
 
 ## Graph Editor (integrated in CF Toolkit)
 

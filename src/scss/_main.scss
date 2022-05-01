@@ -677,24 +677,35 @@ body {
 					display: none;
 					flex-direction: column;
 					* {
-						font-size: 3rem;
+						font-size: 2.3rem;
 					}
-					.account-name {
-						text-align: center;
-						width: 100%;
-						padding: 0.5rem;
-						margin: 0.5rem;
+					.account-usage-container {
+						display: flex;
+						flex-direction: row;
+						align-items: center;
+						justify-content: space-between;
+
+						.account-name {
+							text-align: center;
+							width: 100%;
+							padding: 0.5rem;
+							margin: 0.5rem;
+							font-size: 3.2rem;
+						}
+						button {
+							width: 18rem;
+							color: var(--background);
+							background-color: var(--color);
+							&:hover {
+								color: var(--color);
+								background-color: var(--background);
+							}
+						}
 					}
 					.account-handle-container {
 						display: flex;
 						align-items: center;
 						justify-content: center;
-						* {
-							font-size: 2.3rem;
-						}
-					}
-					.sync-local {
-						font-size: 2.3rem;
 					}
 				}
 			}

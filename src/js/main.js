@@ -28,10 +28,11 @@ const GET_SMIT_LINK = ({ contestId }) => `${PBLEM_SMIT}/${contestId}/submit`;
 
 // API Link
 const CF_TOOLKIT_API = {
-	link: `https://cf-toolkit-api.herokuapp.com/api`,
+	herokuLink: `https://cf-toolkit-api.herokuapp.com/api`,
+	railwayLink: `https://cf-toolkit-api.up.railway.app/api`,
 	test: `http://localhost:1811/api`,
 };
-const API_LINK = CF_TOOLKIT_API.link;
+const API_LINK = CF_TOOLKIT_API.railwayLink;
 
 const CF_API_LINK = `https://codeforces.com/api`;
 const CF_API = {
@@ -45,6 +46,7 @@ const API_DATA = {
 	problems: storageData.get(localStorage, 'problems') || {},
 	bookmarks: [...(storageData.get(localStorage, 'bookmarks') || [])],
 };
+
 // Problem Status
 const problemStatus = {
 	OK: {
@@ -559,6 +561,20 @@ const logInHandle = async (e) => {
 	storageData.set(sessionStorage, 'name', thisUser.name);
 	storageData.set(sessionStorage, 'pass', thisUser.pass);
 	storageData.set(sessionStorage, 'handle', thisUser.handle);
+};
+const logOutHandle = () => {
+	profileContainer.classList.remove('isAuth');
+
+	thisUser.name = '';
+	thisUser.pass = '';
+	thisUser.id = '';
+	thisUser.handle = '';
+
+	storageData.set(sessionStorage, 'id', 'null');
+	storageData.set(sessionStorage, 'isAuth', 0);
+	storageData.set(sessionStorage, 'name', '');
+	storageData.set(sessionStorage, 'pass', '');
+	storageData.set(sessionStorage, 'handle', '');
 };
 const userHandleEdit = ({ target }) => {
 	const handleValue = $('.account-handle-name').value.trim();
@@ -1159,7 +1175,10 @@ toolItems.forEach((item, index) => {
 		</button>
 	</form>
 	<div class="account-container">
-		<span class="account-name">${thisUser.name}</span>
+		<div class="account-usage-container">
+			<span class="account-name">${thisUser.name}</span>
+			<button class="log-out" onclick="logOutHandle()">Log Out</button>
+		</div>
 		<div class="account-handle-container">
 			<input class="account-handle-name" value="${thisUser.handle}"/>
 			<button onclick="userHandleEdit(event)">Edit</button>
