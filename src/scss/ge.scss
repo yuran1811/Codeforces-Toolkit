@@ -159,7 +159,22 @@ body {
 	.config {
 		max-width: 40rem;
 
-		& > div {
+		.config-part1 {
+			position: relative;
+			padding-bottom: 1rem;
+			&::after {
+				content: '';
+				position: absolute;
+				bottom: 0;
+				left: 50%;
+				transform: translateX(-50%);
+				height: 2px;
+				width: 25rem;
+				background-color: black;
+			}
+		}
+
+		.config-item {
 			display: flex;
 			align-items: center;
 			justify-content: space-between;
@@ -170,6 +185,10 @@ body {
 			flex-flow: row wrap;
 			align-items: center;
 			justify-content: center;
+			height: 20vh;
+			max-height: 18rem;
+			overflow: hidden auto;
+
 			&-item {
 				display: flex;
 				align-items: center;
@@ -200,11 +219,23 @@ body {
 		align-items: center;
 		flex-direction: column;
 		justify-content: center;
+		&::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 50%;
+			transform: translateX(-50%);
+			height: 2px;
+			width: 25rem;
+			background-color: black;
+		}
+
 		.content {
 			overflow: hidden auto;
 			position: relative;
-			max-height: 30rem;
+			max-height: 20rem;
 			width: 100%;
+
 			button {
 				position: relative;
 				margin: 1rem;

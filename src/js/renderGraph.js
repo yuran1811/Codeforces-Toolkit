@@ -80,55 +80,56 @@
 	const cvert = (item) => item.name.toLowerCase().split(' ').join('-');
 
 	document.querySelector('.container').innerHTML = `
-		<div class="config">
-			${configs
-				.map(
-					(item) => `
-					<div>
-						<span class="label">${item.name}</span>
-						<input
-							class="${cvert(item)}" type="${item.input}"
-							value="${item.value}">
-						${item?.extraList
-							.map((color) => {
-								return `<input
-											class="${cvert(color)} ${color.tooltip ? 'tooltip' : ''}"
-											type="${color.input}" value="${color.value}"
-											${color.tooltip ? `data-ctx="${color.name}"` : ''}
-										>`;
-							})
-							.join('')}
-					</div>`
-				)
-				.join('')}
-			${other_config
-				.map((config) => {
-					return `<div class="${config.name.toLowerCase()}">
-						${config?.extraList
-							.map((extra) => {
-								return `
-							<div class="extra-item">
-								<span class="label">${extra.name}</span>
-								<input
-										class="${cvert(extra)} ${extra.tooltip ? 'tooltip' : ''}"
-										type="${extra.input}"
-										value="${extra.value}"
-										${extra.tooltip ? `data-ctx="${extra.name}"` : ''}>
-							</div>`;
-							})
-							.join('')}
-				</div>`;
-				})
-				.join('')}
+	<div class="config">
+		<div class="config-part1">
+		${configs
+			.map(
+				(item) => `
+				<div class="config-item">
+					<span class="label">${item.name}</span>
+					<input class="${cvert(item)}" type="${item.input}" value="${item.value}">
+					${item?.extraList
+						.map(
+							(color) =>
+								`<input
+									class="${cvert(color)} ${color.tooltip ? 'tooltip' : ''}"
+									type="${color.input}" value="${color.value}"
+									${color.tooltip ? `data-ctx="${color.name}"` : ''}
+								>`
+						)
+						.join('')}
+				</div>`
+			)
+			.join('')}
 		</div>
+		${other_config
+			.map((config) => {
+				return `<div class="config-item ${config.name.toLowerCase()}">
+					${config?.extraList
+						.map((extra) => {
+							return `
+						<div class="extra-item">
+							<span class="label">${extra.name}</span>
+							<input
+									class="${cvert(extra)} ${extra.tooltip ? 'tooltip' : ''}"
+									type="${extra.input}"
+									value="${extra.value}"
+									${extra.tooltip ? `data-ctx="${extra.name}"` : ''}>
+						</div>`;
+						})
+						.join('')}
+			</div>`;
+			})
+			.join('')}
+	</div>
 
-		<div class="node-list">
-			<div class="content"></div>
-			<div class="btn-container">
-				<div class="list__btn add-btn">Add node</div>
-				<div class="list__btn copy-btn">Copy Data</div>
-			</div>
-		</div>`;
+	<div class="node-list">
+		<div class="content"></div>
+		<div class="btn-container">
+			<div class="list__btn add-btn">Add node</div>
+			<div class="list__btn copy-btn">Copy Data</div>
+		</div>
+	</div>`;
 })();
 
 (() => {
