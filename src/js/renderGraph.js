@@ -73,6 +73,12 @@
 					value: '',
 					tooltip: 0,
 				},
+				{
+					name: 'Copy edge weight',
+					input: 'checkbox',
+					value: '',
+					tooltip: 0,
+				},
 			],
 		},
 	];

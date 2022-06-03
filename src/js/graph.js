@@ -1,21 +1,25 @@
 'use strict';
 
-const backgroundEl = document.querySelector('.background');
-const nodeRadiusEl = document.querySelector('.node-radius');
-const nodeColorEl = document.querySelector('.node-color');
-const nodeValueColorEl = document.querySelector('.node-value-color');
-const strokeWidthEl = document.querySelector('.edge-width');
-const strokeColorEl = document.querySelector('.edge-color');
-const edgeValueColorEl = document.querySelector('.edge-value-color');
-const nodeListContent = document.querySelector('.node-list .content');
-const addNodeBtn = document.querySelector('.add-btn');
-const copyDataBtn = document.querySelector('.copy-btn');
-const showDirect = document.querySelector('.show-direct');
-const showNodeWeight = document.querySelector('.show-node-weight');
-const hideEdgeWeight = document.querySelector('.hide-edge-weight');
-const copyNodeWeight = document.querySelector('.copy-node-weight');
-const inpGr = document.querySelector('.input-group');
-const canvas = document.querySelector('#app');
+const $ = document.querySelector.bind(document);
+const $$ = document.querySelectorAll.bind(document);
+
+const backgroundEl = $('.background');
+const nodeRadiusEl = $('.node-radius');
+const nodeColorEl = $('.node-color');
+const nodeValueColorEl = $('.node-value-color');
+const strokeWidthEl = $('.edge-width');
+const strokeColorEl = $('.edge-color');
+const edgeValueColorEl = $('.edge-value-color');
+const nodeListContent = $('.node-list .content');
+const addNodeBtn = $('.add-btn');
+const copyDataBtn = $('.copy-btn');
+const showDirect = $('.show-direct');
+const showNodeWeight = $('.show-node-weight');
+const hideEdgeWeight = $('.hide-edge-weight');
+const copyNodeWeight = $('.copy-node-weight');
+const copyEdgeWeight = $('.copy-edge-weight');
+const inpGr = $('.input-group');
+const canvas = $('#app');
 const c = canvas.getContext('2d');
 
 canvas.width = innerWidth;
@@ -300,7 +304,7 @@ const drawNodeWeight = (item) => {
 	const dist = +nodeRadiusEl.value + 10;
 
 	let weight;
-	document.querySelectorAll('.node-weight').forEach((inp, index) => {
+	$$('.node-weight').forEach((inp, index) => {
 		const itemPar = inp.closest('.node-info');
 		if (item.value === +itemPar.dataset.value) {
 			weight = +inp.value;
@@ -402,13 +406,14 @@ const addNode = (e, f) => {
 		}
 	}
 };
+
 let moveNode;
 let nodeHandle;
 
 // Variable
 const nodeList = JSON.parse(localStorage.getItem('nodeList')) || [];
+const nodeListTmp = [];
 const nodeColor = nodeColorEl.value;
-
 const strokeList = [];
 const strokeColor = strokeColorEl.value;
 
@@ -424,7 +429,7 @@ const tool = {
 							.indexOf(item.value);
 						if (idOf > -1) node.listAdjTo.splice(idOf, 1);
 
-						document.querySelector(
+						$(
 							`.node-info[data-value="${node.value}"] .node-to`
 						).value = node.listAdjTo
 							.map((adj) => `${adj.item.value}:${adj.weight}`)
@@ -483,16 +488,18 @@ const mouse = {
 	y: undefined,
 };
 
-// if (nodeList.length)
-// 	nodeList.forEach((item) =>
-// 		addNodeInfo(item.value, item.weight, item.listAdjTo)
-// 	);
+/*
+if (nodeList.length)
+	nodeList.forEach((item) =>
+		addNodeInfo(item.value, item.weight, item.listAdjTo)
+	);
+*/
 
 // Event Handles
 const inpAddNode = (nodeValue) => {
 	const getDelta = (r) => {
-		let amount = 4 * r + r / 3;
-		let delta = {
+		const amount = 4 * r + r / 3;
+		const delta = {
 			x: nodeList.length / 2 || 1,
 			y: nodeList.length / 2 || 1,
 		};
@@ -510,31 +517,34 @@ const inpAddNode = (nodeValue) => {
 		a: Math.random() * (2 * delta.x) + (x - delta.x),
 		b: Math.random() * (2 * delta.y) + (y - delta.y),
 	});
-
-	const nodeInList = nodeList.find((item) => item.value === nodeValue);
-	if (nodeInList)
-		return {
-			unique: 0,
-			node: nodeInList,
-		};
-
-	let midPoint = {
+	const midPoint = {
 		x: innerWidth / 2,
 		y: innerHeight / 2,
 	};
-	let r = nodeRadiusEl.value;
-	let nowNode = getPos(midPoint, getDelta(r));
-	while (
-		nodeList.length &&
-		!nodeList.every((item) => calcDist(nowNode, item) > 4 * r * r)
-	)
-		nowNode = getPos(midPoint, getDelta(r));
+	const r = nodeRadiusEl.value;
+	const nodeExist = nodeList.find((_) => _.value === nodeValue);
+	const nodeValueExist = nodeListTmp.find((_) => _.value === nodeValue);
+
+	if (nodeExist) {
+		return {
+			unique: 0,
+			node: nodeExist,
+		};
+	}
+
+	let curNode = getPos(midPoint, getDelta(r));
+	if (!nodeValueExist)
+		while (
+			nodeList.length &&
+			!nodeList.every((item) => calcDist(curNode, item) > 4 * r * r)
+		)
+			curNode = getPos(midPoint, getDelta(r));
 
 	return {
 		unique: 1,
 		node: {
-			x: nowNode.a,
-			y: nowNode.b,
+			x: nodeValueExist ? nodeValueExist.x : curNode.a,
+			y: nodeValueExist ? nodeValueExist.y : curNode.b,
 			weight: '0',
 			listAdjTo: [],
 			value: nodeValue,
@@ -565,17 +575,15 @@ const addHandle = () => {
 };
 
 addNodeBtn.onclick = addHandle;
-showDirect.oninput = () => update();
-showNodeWeight.oninput = () => update();
-hideEdgeWeight.oninput = () => update();
+showDirect.oninput = update;
+showNodeWeight.oninput = update;
+hideEdgeWeight.oninput = update;
 
 onresize = () => {
 	canvas.width = innerWidth;
 	canvas.height = innerHeight;
 	update();
 };
-
-let animationID;
 onmousedown = (f) => {
 	mouseDown = 1;
 	mouse.x = f.clientX;
@@ -626,7 +634,6 @@ onmousedown = (f) => {
 	);
 	onkeyup = () => (keyDown = 0);
 };
-
 addEventListener('mouseup', () => {
 	mouseDown = 0;
 	removeEventListener('mousemove', moveNode);
@@ -639,10 +646,10 @@ addEventListener('keydown', (e) => {
 	const key = e.key.toLowerCase();
 	if (key === 'x') tool.run[key]();
 
-	const container = document.querySelector('.container');
+	const container = $('.container');
 	if (key === 'p') container.classList.toggle('active');
 
-	const helpModal = document.querySelector('.help-modal');
+	const helpModal = $('.help-modal');
 	if (key === 'h') helpModal.classList.toggle('active');
 
 	if (key === 'i') inpGr.classList.toggle('active');
@@ -667,21 +674,26 @@ copyDataBtn.onclick = () => {
 							const weightList = adj.weight?.includes('/')
 								? adj.weight.split('/').join(' ')
 								: adj.weight;
-							return `${node.value} ${adj.item.value} ${
-								(adj.weight && weightList) || ''
-							}\n`;
+							const edge = `${node.value} ${adj.item.value}`;
+							const w = (adj.weight && weightList) || '';
+							const edgeWeight = copyEdgeWeight.checked
+								? ` ${w}\n`
+								: '\n';
+
+							return edge + edgeWeight;
 						})
 						.join('') || '';
+
 				const adjOwnData =
 					!adjsOut && !isAdjsOthers ? node.value + '\n' : '';
-
-				const node_nodeWeight = node.weight
+				const nodeOwnWeight = node.weight
 					? `${node.value} ${node.value} ${node.weight}\n`
 					: '';
+
 				return (
 					adjsOut +
 					adjOwnData +
-					(copyNodeWeight.checked ? node_nodeWeight : '')
+					(copyNodeWeight.checked ? nodeOwnWeight : '')
 				);
 			})
 			.join('')
@@ -698,11 +710,16 @@ copyDataBtn.onclick = () => {
 inpGr.onmousemove = (e) => e.stopPropagation();
 inpGr.oninput = function () {
 	nodeListContent.innerHTML = '';
+	nodeListTmp.length = 0;
+	nodeListTmp.push(...nodeList);
 	nodeList.length = 0;
+
+	console.log(nodeListTmp);
 
 	const lines = this.value.trim().split('\n');
 	lines.forEach((line) => {
 		if (!line[0]) return;
+
 		const directEdge = !showDirect.checked;
 		const arr = line
 			.trim()
@@ -710,19 +727,15 @@ inpGr.oninput = function () {
 			.split(' ')
 			.map((item) => +item);
 		const from = inpAddNode(arr[0]);
-		from.unique && nodeList.push(from.node);
 
-		if (arr.length === 2) {
+		if (from.unique) nodeList.push(from.node);
+
+		if (arr.length >= 2) {
 			const to = inpAddNode(arr[1]);
-			to.unique && nodeList.push(to.node);
-			from.node.listAdjTo.push({ item: to.node, weight: '0' });
-			directEdge &&
-				to.node.listAdjTo.push({ item: from.node, weight: '0' });
-		}
-		if (arr.length > 2) {
-			const to = inpAddNode(arr[1]);
-			to.unique && nodeList.push(to.node);
-			const weight = arr.slice(2).join('/');
+			const weight = arr.length > 2 ? arr.slice(2).join('/') : '0';
+
+			if (to.unique) nodeList.push(to.node);
+
 			from.node.listAdjTo.push({ item: to.node, weight });
 			directEdge && to.node.listAdjTo.push({ item: from.node, weight });
 		}
@@ -738,8 +751,11 @@ inpGr.oninput = function () {
 			.join(',');
 		addNodeInfo(item.value, item.weight, adjs);
 	});
+
 	update();
 };
+
+$('body .container').onmousemove = (e) => e.stopPropagation();
 
 update();
 
