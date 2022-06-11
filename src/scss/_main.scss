@@ -82,12 +82,7 @@ body {
 
 			.tool {
 				&-brand > span {
-					background-image: linear-gradient(
-						to right,
-						#fc7268,
-						#00aefd,
-						#ffa400
-					);
+					background-image: linear-gradient(to right, #fc7268, #00aefd, #ffa400);
 					background-size: 300% 300%;
 					-webkit-background-clip: text;
 					background-clip: text;
@@ -517,6 +512,11 @@ body {
 
 			&.no-tags {
 				.content-item__tags {
+					display: none;
+				}
+			}
+			&.no-rating {
+				.content-item__rating {
 					display: none;
 				}
 			}

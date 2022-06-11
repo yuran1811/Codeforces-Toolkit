@@ -646,6 +646,7 @@ toolItems.forEach((item, index) => {
 			<button class="random">Random</button>
 			<button class="updateProblemBtn">Update</button>
 			<button class="tags-toggle">Hide Tags</button>
+			<button class="rating-toggle">Hide Rating</button>
 		</div>
 	</form>
 	<div class="all-content"></div>`;
@@ -690,6 +691,13 @@ toolItems.forEach((item, index) => {
 		problemsetContainer.classList.toggle('no-tags');
 		e.target.innerHTML =
 			e.target.innerHTML === 'Hide Tags' ? 'Show Tags' : 'Hide Tags';
+	};
+
+	$('.rating-toggle').onclick = (e) => {
+		e.preventDefault();
+		problemsetContainer.classList.toggle('no-rating');
+		e.target.innerHTML =
+			e.target.innerHTML === 'Hide Rating' ? 'Show Rating' : 'Hide Rating';
 	};
 })();
 
